@@ -34,7 +34,7 @@ public class MovieListView {
         aiyo.print("7. Update a movie's information");
         aiyo.print("0. Exit program");
 
-        return aiyo.readString("Please select from the above choices [0-6]");
+        return aiyo.readString("Please select from the above choices [0-7]");
     }
 
     //prints out prompts for new movie to be added to database
@@ -97,6 +97,16 @@ public class MovieListView {
     
     public void duplicateMovie(){
         aiyo.print("\n--- Movie already exists in database ---\n");
+    }
+    
+    public void displayResultsMessage(){
+        aiyo.print("These are the reults from your search");
+        aiyo.readString("Press enter to continue");
+    }
+    
+    public void printErrorMessage(String error){
+        aiyo.print("!--- ERROR ---!");
+        aiyo.print(error);
     }
 
     public void viewAll(List<Movie> movieDB) {

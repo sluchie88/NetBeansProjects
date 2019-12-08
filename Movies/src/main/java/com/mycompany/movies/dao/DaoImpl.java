@@ -33,21 +33,24 @@ public class DaoImpl implements Dao {
     but all other information as well, aside from user content. If everything doesn't
     match, then it will be assigned an ID and added to the Linked List
      */
-    public Movie addMovie(Movie movie) {
-
-        int movieID = 0;
-        for (Movie m : movieDB) {
-            movieID = Math.max(movieID, m.getID());
-        }
-        movie.setID(movieID + 1);
-        movieDB.add(movie);
-        try {
-            saveToFile();
-        } catch (IOException ex) {
-            System.out.println(ex.getMessage());
+    public Movie addMovie(Movie movie) throws DaoException {
+        if (movieExists(movie)) {
             return null;
+        } else {
+            int movieID = 0;
+            for (Movie m : movieDB) {
+                movieID = Math.max(movieID, m.getID());
+            }
+            movie.setID(movieID + 1);
+            movieDB.add(movie);
+            try {
+                saveToFile();
+            } catch (IOException ex) {
+                System.out.println(ex.getMessage());
+                return null;
+            }
+            return movie;
         }
-        return movie;
     }
 
     @Override
@@ -56,7 +59,7 @@ public class DaoImpl implements Dao {
     movieDB linked list. Was going to make a load method, but that would have just
     called to this method so I made a call to it in Main to actually load in the movies
      */
-    public List<Movie> getAllMovies() {
+    public List<Movie> getAllMovies() throws DaoException{
         List<Movie> allMovies = new LinkedList<>();
         try (BufferedReader reader = new BufferedReader(new FileReader(FILE_PATH))) {
 
@@ -82,7 +85,7 @@ public class DaoImpl implements Dao {
     since Hollywood loves remakes but not creative titles, thus making this project a breeze
      */
     @Override
-    public List<Movie> getMovie(String title) {
+    public List<Movie> getMovie(String title) throws DaoException{
         List<Movie> currMovie = new LinkedList<>();
         for (int i = 0; i < movieDB.size(); i++) {
             String currTitle = movieDB.get(i).getTitle();
@@ -97,7 +100,7 @@ public class DaoImpl implements Dao {
     a simple method that seraches through the DB for an ID and returns the movie attached to it
      */
     @Override
-    public Movie findByID(int id) {
+    public Movie findByID(int id) throws DaoException{
         Movie retMovie = new Movie();
         for (int i = 0; i < movieDB.size(); i++) {
             retMovie = movieDB.get(i);
@@ -114,7 +117,7 @@ public class DaoImpl implements Dao {
     Joan of Arc (Ark?, too lazy to exercise my Google-fu right now). 
      */
     @Override
-    public List<Movie> searchByKeyWord(String search) {
+    public List<Movie> searchByKeyWord(String search) throws DaoException{
         List<Movie> found = new LinkedList<>();
         search = search.toLowerCase();
         for (int i = 0; i < movieDB.size(); i++) {
@@ -136,7 +139,7 @@ public class DaoImpl implements Dao {
     where to start
      */
     @Override
-    public boolean removie(int ID) {
+    public boolean removie(int ID) throws DaoException{
         boolean successfullyRemoved = false;
         for (int i = 0; i < movieDB.size(); i++) {
             if (movieDB.get(i).getID() == ID) {
@@ -155,7 +158,7 @@ public class DaoImpl implements Dao {
 
     @Override
     //resolve index within method, don't send back to controller
-    public Movie editMovie(Movie movie) {
+    public Movie editMovie(Movie movie) throws DaoException{
         int counter = getIndex(movie.getID());
         movieDB.set(counter, movie);
         try {
@@ -217,5 +220,37 @@ public class DaoImpl implements Dao {
                 lukeFilewalker.println(marshallMovie(m));
             }
         }
+    }
+
+    /*
+    since there are like 50 different Shaft movies, I decided to check all the other
+    info of a movie insted of simply assuming a duplicate title means a duplicate movie.
+    
+    Moved this from Dao to controller because Controller is the brain, but wondering
+    if that was the right move or not.
+    
+    Tried doing this in addMovie() but then realized my life was easier by moving it to a
+    separate function.
+     */
+    private boolean movieExists(Movie movie) {
+        boolean duplicate = false;
+        List<Movie> allMovies;
+        try {
+            allMovies = getAllMovies();
+            for (int i = 0; i < allMovies.size(); i++) {
+            Movie currMovie = allMovies.get(i);
+            if (currMovie.getTitle().equals(movie.getTitle())
+                    && currMovie.getReleaseDate().equals(movie.getReleaseDate())
+                    && currMovie.getDirector().equals(movie.getDirector())
+                    && currMovie.getStudio().equals(movie.getStudio())
+                    && currMovie.getRating().equals(movie.getRating())) {
+                duplicate = true;
+            }
+        }
+        } catch (DaoException ex) {
+            Logger.getLogger(DaoImpl.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        
+        return duplicate;
     }
 }

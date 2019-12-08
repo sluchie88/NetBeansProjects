@@ -9,22 +9,22 @@ package com.mycompany.movies.dao;
  *
  * @author TomTom
  */
-public class DaoException extends Exception {
+public class DuplicateMovieException extends Exception {
 
     /**
-     * Creates a new instance of <code>DaoException</code> without detail
-     * message.
+     * Creates a new instance of <code>DuplicateMovieException</code> without
+     * detail message.
      */
-    public DaoException() {
+    public DuplicateMovieException() {
     }
 
     /**
-     * Constructs an instance of <code>DaoException</code> with the specified
-     * detail message.
+     * Constructs an instance of <code>DuplicateMovieException</code> with the
+     * specified detail message.
      *
      * @param msg the detail message.
      */
-    public DaoException(String msg) {
+    public DuplicateMovieException(String msg) {
         super(msg);
     }
 }

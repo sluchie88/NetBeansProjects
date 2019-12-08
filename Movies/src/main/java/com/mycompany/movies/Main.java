@@ -7,10 +7,13 @@ package com.mycompany.movies;
 
 import com.mycompany.movies.controller.Controller;
 import com.mycompany.movies.dao.Dao;
+import com.mycompany.movies.dao.DaoException;
 import com.mycompany.movies.dao.DaoImpl;
 import com.mycompany.movies.ui.MovieListView;
 import com.mycompany.movies.ui.UserIO;
 import com.mycompany.movies.ui.UserIOImpl;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  *
@@ -21,10 +24,14 @@ public class Main {
         UserIO io = new UserIOImpl();
         MovieListView view = new MovieListView(io);
         Dao dd = new DaoImpl();
-        //this actually loads in all the movies from the file
-        //was going to make a load method but it seemed redundant when 
-        //I could just call this here
-        dd.getAllMovies();
+        try {
+            //this actually loads in all the movies from the file
+            //was going to make a load method but it seemed redundant when
+            //I could just call this here
+            dd.getAllMovies();
+        } catch (DaoException ex) {
+            Logger.getLogger(Main.class.getName()).log(Level.SEVERE, null, ex);
+        }
         Controller conty = new Controller(dd, view);
         conty.run();
     }
