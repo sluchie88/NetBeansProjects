@@ -1,0 +1,12 @@
+com\mycompany\vendingmachine\controller\MotherBrain.class
+com\mycompany\vendingmachine\items\service\VendingMachine.class
+com\mycompany\vendingmachine\dto\Item.class
+com\mycompany\vendingmachine\items\service\VendingMachineInterface.class
+com\mycompany\vendingmachine\dao\VendingDao.class
+com\mycompany\vendingmachine\view\UserIOInterface.class
+com\mycompany\vendingmachine\dao\vendingdaointerface.class
+com\mycompany\vendingmachine\app\App.class
+com\mycompany\vendingmachine\dao\NoItemInventoryException.class
+com\mycompany\vendingmachine\items\service\InsufficientFundsException.class
+com\mycompany\vendingmachine\view\VendingView.class
+com\mycompany\vendingmachine\view\UserIO.class

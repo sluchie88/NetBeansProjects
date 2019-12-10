@@ -1,0 +1,3 @@
+A1::Butterfinger::0.75::5
+A2::Snickers::0.80::6
+A3::Milky Way::0.70::6

@@ -1,0 +1,12 @@
+C:\Users\slu_d\Documents\NetBeansProjects\VendingMachine\src\main\java\com\mycompany\vendingmachine\controller\MotherBrain.java
+C:\Users\slu_d\Documents\NetBeansProjects\VendingMachine\src\main\java\com\mycompany\vendingmachine\dao\VendingDao.java
+C:\Users\slu_d\Documents\NetBeansProjects\VendingMachine\src\main\java\com\mycompany\vendingmachine\items\service\VendingMachineInterface.java
+C:\Users\slu_d\Documents\NetBeansProjects\VendingMachine\src\main\java\com\mycompany\vendingmachine\view\UserIO.java
+C:\Users\slu_d\Documents\NetBeansProjects\VendingMachine\src\main\java\com\mycompany\vendingmachine\items\service\InsufficientFundsException.java
+C:\Users\slu_d\Documents\NetBeansProjects\VendingMachine\src\main\java\com\mycompany\vendingmachine\view\UserIOInterface.java
+C:\Users\slu_d\Documents\NetBeansProjects\VendingMachine\src\main\java\com\mycompany\vendingmachine\dao\vendingdaointerface.java
+C:\Users\slu_d\Documents\NetBeansProjects\VendingMachine\src\main\java\com\mycompany\vendingmachine\dao\NoItemInventoryException.java
+C:\Users\slu_d\Documents\NetBeansProjects\VendingMachine\src\main\java\com\mycompany\vendingmachine\dto\Item.java
+C:\Users\slu_d\Documents\NetBeansProjects\VendingMachine\src\main\java\com\mycompany\vendingmachine\view\VendingView.java
+C:\Users\slu_d\Documents\NetBeansProjects\VendingMachine\src\main\java\com\mycompany\vendingmachine\app\App.java
+C:\Users\slu_d\Documents\NetBeansProjects\VendingMachine\src\main\java\com\mycompany\vendingmachine\items\service\VendingMachine.java
