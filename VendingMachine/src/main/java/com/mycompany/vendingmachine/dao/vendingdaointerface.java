@@ -6,6 +6,7 @@
 package com.mycompany.vendingmachine.dao;
 
 import com.mycompany.vendingmachine.dto.Item;
+import java.math.BigDecimal;
 import java.util.Map;
 
 /**
@@ -14,7 +15,7 @@ import java.util.Map;
  */
 public interface vendingdaointerface {
     
-    public Item vendItem(String code) throws NoItemInventoryException;
+    public Item vendItem(String code, BigDecimal wallet) throws NoItemInventoryException;
     
     public Map<String, Item> getAllStock();
     

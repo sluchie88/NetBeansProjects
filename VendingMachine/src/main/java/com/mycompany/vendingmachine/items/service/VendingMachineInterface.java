@@ -18,7 +18,9 @@ public interface VendingMachineInterface {
     
     public Map<String, Item> getStock();
     
-    public Item buyItem(String code, BigDecimal wallet) throws NoItemInventoryException, InsufficientFundsException;
+    public Item buyItem(String code) throws NoItemInventoryException, InsufficientFundsException;
     
-    public String giveChange();
+    public int[] getChange();
+    
+    public BigDecimal addMoney(BigDecimal insertedMoney);
 }

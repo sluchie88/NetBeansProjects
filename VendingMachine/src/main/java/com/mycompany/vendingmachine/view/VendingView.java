@@ -8,6 +8,7 @@ package com.mycompany.vendingmachine.view;
 import com.mycompany.vendingmachine.dto.Item;
 import java.math.BigDecimal;
 import java.util.Map;
+import java.util.stream.Stream;
 
 /**
  *
@@ -26,8 +27,8 @@ public class VendingView {
         return uio.readString("Please enter a number between [0-4]");
     }
 
-    public void displayCurrentAmountInserted() {
-
+    public void displayCurrentAmountInserted(BigDecimal amt) {
+        uio.printLine("Current amount inserted: $" + amt);
     }
 
     public void displayErrorMessage() {
@@ -77,6 +78,10 @@ public class VendingView {
 
     public void displayInsertMoney() {
         uio.printLine("\n--- You must insert money before you can do that ---\n");
+    }
+
+    public void displayExceptionMessage(String message) {
+        uio.printLine("\n=== " + message + " ===");
     }
 
 }

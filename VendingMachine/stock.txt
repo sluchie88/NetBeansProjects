@@ -1,3 +1,12 @@
-A1::Butterfinger::0.75::5
-A2::Snickers::0.80::6
-A3::Milky Way::0.70::6
+A1::Butterfinger::0.75::0
+B2::Double Stuf Oreos::1.50::6
+C3::Ruffles Au Gratin::1.55::3
+A2::Snickers::0.80::3
+B3::Chips Ahoy::1.25::4
+C4::Ruffles BBQ::1.50::1
+A3::Milky Way::0.70::3
+B4::Chewy Chips Ahoy::1.25::5
+A4::Whatchamacallit::0.75::5
+C1::Ruffles Original::1.50::3
+B1::Oreos::1.25::5
+C2::Ruffles Sour Cream 'n Onion::1.50::4

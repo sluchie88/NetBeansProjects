@@ -21,7 +21,6 @@ public class MotherBrain {
 
     private VendingMachine vm;
     private VendingView vv;
-    private BigDecimal insertedAmt = BigDecimal.ZERO;
 
     public MotherBrain(VendingMachine bender, VendingView fry) {
         this.vm = bender;
@@ -30,18 +29,19 @@ public class MotherBrain {
 
     public void run() {
         boolean runProgram = true;
+        boolean displayAdminMenu = false;
         String menuSelection;
         viewCurrentStock();
         while (runProgram) {
-            if (insertedAmt.compareTo(BigDecimal.ZERO) > 0) {
-                System.out.println("\nCurrent amount inserted: $" + insertedAmt + "\n");
-            }
-            //vv.displayCurrentAmountInserted();
+            BigDecimal insertedAmt = getCurrentAmountInserted();
             menuSelection = vv.getMenuSelection();
 
-            if (menuSelection.equals("0")) {
+            if (menuSelection.equals("0") && insertedAmt.compareTo(BigDecimal.ZERO) > 0) {
+                dispenseChange();
                 runProgram = false;
-            } else if (menuSelection.equals("1")) {
+            }else if(menuSelection.equals("0")){
+                runProgram = false;
+            }else if (menuSelection.equals("1")) {
                 viewCurrentStock();
             } else if (menuSelection.equals("2")) {
                 insertMoney();
@@ -53,6 +53,8 @@ public class MotherBrain {
                 dispenseChange();
             } else if (menuSelection.equals("4") && insertedAmt.compareTo(BigDecimal.ZERO) == 0) {
                 vv.displayInsertMoney();
+            } else if(menuSelection.equals("01234")){
+                displayAdminMenu = true;
             }
 
         }
@@ -68,29 +70,45 @@ public class MotherBrain {
         Map<String, Item> machine = vm.getStock();
         vv.displayVendingMachine(machine);
     }
-
-    private void insertMoney() {
-        BigDecimal additionalMoneys = vv.getAmountInserted();
-        insertedAmt = insertedAmt.add(additionalMoneys);
+    
+    private BigDecimal getCurrentAmountInserted(){
+        vv.displayCurrentAmountInserted(vm.retrieveInsertedMoneys());
+        return vm.retrieveInsertedMoneys();
     }
 
+    //allows the user to insert money. works with view to gather the amount the user
+    //wishes to insert
+    private void insertMoney() {
+        BigDecimal additionalMoneys = vv.getAmountInserted();
+        vm.addMoney(additionalMoneys);
+        vv.displaySuccess();
+    }
+
+    /*
+    responsible for passing the code of the item the user wants to buy down to the service
+    Catches either the InsufficientFunds or NoItemInventory exceptions and displays their message
+    */
     private void purchaseItem() {
         Map<String, Item> machine = vm.getStock();
         vv.displayVendingMachine(machine);
         Item buying = new Item();
         String uChoice = vv.getDesiredItemToPurchase();
         try {
-            buying = vm.buyItem(uChoice, insertedAmt);
-        } catch (InsufficientFundsException | NoItemInventoryException ie) {
-            ie.getMessage();
-        }
-        insertedAmt = insertedAmt.subtract(buying.getPrice());
+            buying = vm.buyItem(uChoice);
+            //insertedAmt = insertedAmt.subtract(buying.getPrice());
         vv.displaySuccess();
+        } catch (InsufficientFundsException | NoItemInventoryException ie) {
+            vv.displayExceptionMessage(ie.getMessage());
+        }
+        
     }
 
+    /*
+    calls to the method in the service responsible for calculating the change due.
+    hands to the resulting int array off to the view for displaying
+    */
     private void dispenseChange() {
-        int[] changeArray = vm.getChange(insertedAmt);
-        insertedAmt = BigDecimal.ZERO;
+        int[] changeArray = vm.getChange();
         vv.displayChange(changeArray);
     }
 }

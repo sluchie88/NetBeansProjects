@@ -16,6 +16,8 @@ import java.math.BigDecimal;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Scanner;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  *
@@ -32,11 +34,23 @@ public class VendingDao implements vendingdaointerface {
     vends item passed in. decrements its stock, if available (throws NoItemInventory if none)
     saves to file after vending
      */
-    public Item vendItem(String code) throws NoItemInventoryException {
+    public Item vendItem(String code, BigDecimal wallet) throws NoItemInventoryException {
+        if(inventory.isEmpty()){
+            try {
+                loadFile();
+            } catch (FileNotFoundException ex) {
+            }
+        }
+        
+        Item item = new Item();
+        if(inventory.get(code) != null){
+            item = inventory.get(code);
+        }else{
+            throw new NoItemInventoryException("Item does not exist.");
+        }
+            
 
-        Item item = inventory.get(code);
-
-        if (item != null && item.getStock() != 0) {
+        if (item != null && item.getStock() > 0 && item.getPrice().compareTo(wallet) <= 0) {
             Item sameButNew = item;
             sameButNew.setStock(item.getStock() - 1);
             inventory.put(sameButNew.getCode(), sameButNew);
@@ -46,12 +60,21 @@ public class VendingDao implements vendingdaointerface {
             } catch (IOException ex) {
             }
         }
+        else if (item.getStock() <= 0){
+            throw new NoItemInventoryException(item.getName() + " is out of stock");
+        }
 
-        return null;
+        return item;
     }
 
     @Override
     public Map<String, Item> getAllStock() {
+        if(inventory.isEmpty()){
+            try {
+                loadFile();
+            } catch (FileNotFoundException ex) {
+            }
+        }
         return inventory;
     }
 
