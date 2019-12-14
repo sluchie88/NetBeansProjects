@@ -4,6 +4,11 @@ import javax.mail.internet.AddressException;
 import javax.mail.internet.InternetAddress;
 
 public final class Validations {
+    
+    /*
+    seems to be working. don't touch. uses library methods
+    to validate input
+    */
 
     public static boolean inRange(int value, int min, int max) {
         return value >= min && value <= max;

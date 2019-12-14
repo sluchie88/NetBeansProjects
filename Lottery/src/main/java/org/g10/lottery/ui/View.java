@@ -65,7 +65,7 @@ public class View {
         ticket.setPickThree(io.readInt("Pick 3 [1-69]:", 1, 69));
         ticket.setPickFour(io.readInt("Pick 4 [1-69]:", 1, 69));
         ticket.setPickFive(io.readInt("Pick 5 [1-69]:", 1, 69));
-        ticket.setPowerBall(io.readInt("Powerball [1-26]:", 1, 69));
+        ticket.setPowerBall(io.readInt("Powerball [1-26]:", 1, 26));
         return ticket;
     }
 
@@ -127,8 +127,26 @@ public class View {
         io.print("No customers with an email starting with: " + prefix + "\n");
     }
 
+    /*
+    overrode the toString method in the Match class for the purposes of printing out winners here.
+    wanted to use a stream in order to sort the winners according to their number of matches and
+    amount won. Method works, but wanted to play around with streams
+    */
     void displayWinners(List<Match> matches) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+//        if (!matches.isEmpty()) {
+//            for (Match w : matches) {
+//                displayTicket(w.getTicket());
+//                io.print("Number of matches: " + w.getNumberMatchs());
+//                if (w.getNumberMatchs() == 5 && w.isPowerBallMatch()) {
+//                    displayJackpot();
+//                }
+//                io.print("Hit the PowerBall: " + w.isPowerBallMatch());
+//            }
+//        } else {
+//            io.print("No winners. Sorry.");
+//        }
+        matches.stream().sorted((a, b) -> a.getNumberMatchs() - b.getNumberMatchs())
+                .forEach(m -> io.print(m.toString()));
     }
 
     String getEmailSearch() {
@@ -188,6 +206,10 @@ public class View {
                     "How many tickets should I auto-generated? [0-500]", 0, 500);
         }
         return 0;
+    }
+
+    private void displayJackpot() {
+        io.print("\n\n !!!! WINNER WINNER CHICKEN DINNER !!!\n\n");
     }
 
 }

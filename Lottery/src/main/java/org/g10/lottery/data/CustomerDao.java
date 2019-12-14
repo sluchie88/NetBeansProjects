@@ -12,6 +12,8 @@ public interface CustomerDao {
     Customer findByEmail(String emailAddress);
 
     List<Customer> findByLastName(String lastName);
+    
+    List<Customer> findByZipCode(String zipCode);
 
     void add(Customer customer) throws StorageException;
 

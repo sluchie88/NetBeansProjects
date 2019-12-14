@@ -7,6 +7,11 @@ import org.g10.lottery.models.Ticket;
 
 public class Drawing {
 
+    /*
+    class that does the drawing of new tickets
+    seems to be working properly so I don't need to touch it
+    */
+    
     private static Random rand = new Random();
 
     public static Ticket draw() {

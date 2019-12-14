@@ -4,6 +4,10 @@ import java.time.LocalDateTime;
 
 public class Ticket {
 
+    /*
+    ticket class. pretty straightforward
+    */
+    
     private int id;
     private Customer customer;
     private final int[] picks = new int[5];

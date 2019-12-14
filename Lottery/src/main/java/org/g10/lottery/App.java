@@ -12,6 +12,10 @@ import org.g10.lottery.ui.View;
 
 public class App {
 
+    /*
+    Pretty straightforward App class. Will need to refactor using Spring and DI
+    */
+    
     public static final String CUSTOMER_FILE_PATH = "customers.txt";
     public static final String TICKET_FILE_PATH = "tickets.txt";
 

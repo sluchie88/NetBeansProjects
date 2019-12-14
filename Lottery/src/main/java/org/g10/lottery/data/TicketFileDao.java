@@ -12,11 +12,18 @@ public class TicketFileDao
         extends FileDao<Ticket>
         implements TicketDao {
 
+    /*
+    constructor. path is file path (i think)
+    9 is for number of columns, and false is for whether or not there are headers
+    */
     public TicketFileDao(String path) {
         super(path, 9, false);
     }
 
     @Override
+    /*
+    uses a stream to return an array list of all tickets in DB
+    */
     public List<Ticket> findAll() {
         try {
             return read(this::mapToTicket).stream()
@@ -27,6 +34,9 @@ public class TicketFileDao
     }
 
     @Override
+    /*
+    finds and returns a ticket via its ID
+    */
     public Ticket findById(int id) {
 
         return findAll().stream()
@@ -37,6 +47,9 @@ public class TicketFileDao
     }
 
     @Override
+    /*
+    returns a list of tickets associated with a particular email address
+    */
     public List<Ticket> findByEmailAddress(String emailAddress) {
         return findAll().stream()
                 .filter(t -> t.getCustomer().getEmailAddress().equals(emailAddress))
@@ -44,6 +57,10 @@ public class TicketFileDao
     }
 
     @Override
+    /*
+    adds a ticket to the DB. adds an ID to the ticket that's one higher than the max
+    returns the ticket
+    */
     public Ticket add(Ticket ticket) throws StorageException {
 
         int maxId = findAll().stream()
@@ -59,6 +76,9 @@ public class TicketFileDao
     }
 
     @Override
+    /*
+    finds and writes all tickets to the DB
+    */
     public void addAll(List<Ticket> tickets) throws StorageException {
         List<Ticket> all = findAll();
 
@@ -76,6 +96,10 @@ public class TicketFileDao
         write(all, this::mapToString);
     }
 
+    /*
+    takes in an array of strings containing information about a ticket
+    creates a new ticket using that information
+    */
     private Ticket mapToTicket(String[] tokens) {
 
         Customer customer = new Customer();
@@ -94,6 +118,9 @@ public class TicketFileDao
 
     }
 
+    /*
+    takes a ticket and turns it into a string
+    */
     private String mapToString(Ticket ticket) {
         return String.format("%s,%s,%s,%s,%s,%s,%s,%s,%s",
                 ticket.getId(),

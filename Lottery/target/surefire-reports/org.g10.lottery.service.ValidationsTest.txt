@@ -1,0 +1,12 @@
+-------------------------------------------------------------------------------
+Test set: org.g10.lottery.service.ValidationsTest
+-------------------------------------------------------------------------------
+Tests run: 3, Failures: 1, Errors: 0, Skipped: 0, Time elapsed: 0.006 sec <<< FAILURE!
+org.g10.lottery.service.ValidationsTest.testIsEmail()  Time elapsed: 0.003 sec  <<< FAILURE!
+org.opentest4j.AssertionFailedError: expected: <true> but was: <false>
+	at org.junit.jupiter.api.AssertionUtils.fail(AssertionUtils.java:38)
+	at org.junit.jupiter.api.AssertTrue.assertTrue(AssertTrue.java:40)
+	at org.junit.jupiter.api.AssertTrue.assertTrue(AssertTrue.java:35)
+	at org.junit.jupiter.api.Assertions.assertTrue(Assertions.java:137)
+	at org.g10.lottery.service.ValidationsTest.testIsEmail(ValidationsTest.java:31)
+
