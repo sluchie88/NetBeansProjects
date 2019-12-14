@@ -65,7 +65,7 @@ public class CustomerService {
     }
     
     /*
-    need pass throughs for searching for last name, first name, and exact email address...i think?
+    need pass throughs for searching for last name, first name, and exact email address
     */
 
 }
