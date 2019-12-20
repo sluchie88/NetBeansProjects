@@ -30,13 +30,13 @@ public class PatientFileDao
     }
 
     @Override
-    public List<Patient> findByBirthdate() {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    public List<Patient> findByBirthdate(LocalDate bDay) throws StorageException {
+        return findAll().stream().filter(p -> p.getBirthday().equals(bDay)).collect(Collectors.toList());        
     }
 
     @Override
-    public List<Patient> findByLastName() {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    public List<Patient> findByLastName(String lName) throws StorageException {
+        return findAll().stream().filter(p -> p.getLastName().equalsIgnoreCase(lName)).collect(Collectors.toList());
     }
 
     @Override

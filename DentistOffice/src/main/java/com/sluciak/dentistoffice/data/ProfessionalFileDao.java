@@ -28,7 +28,9 @@ public class ProfessionalFileDao extends FileDao<Professional> implements Profes
 
     @Override
     public List<Professional> findByProfession(Professions prof)  throws StorageException {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        return readObject(this::mapToProfessional).stream()
+                .filter(p -> p.getSpecialty().equals(prof))
+                .collect(Collectors.toList());
     }
 
     @Override

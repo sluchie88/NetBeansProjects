@@ -25,5 +25,8 @@ public interface AppointmentServiceInterface {
 
     public Appointment updateAppointment(Appointment change);
 
-    public OpenAppointment cancelAppointment(Appointment toCancel);
+    public TimeSlot cancelAppointment(Appointment toCancel);
+
+     public List<TimeSlot> findOpenAppointments(LocalDate dateOfChoice, Professions title) throws StorageException;
+
 }

@@ -7,7 +7,7 @@ package com.sluciak.dentistoffice.data;
 
 import com.sluciak.dentistoffice.models.Appointment;
 import com.sluciak.dentistoffice.models.Professions;
-import com.sluciak.dentistoffice.service.OpenAppointment;
+import com.sluciak.dentistoffice.service.TimeSlot;
 import java.time.LocalDate;
 import java.util.List;
 
@@ -25,7 +25,7 @@ public interface AppointmentDao {
 
     public Appointment updateAppointment(Appointment change);
     
-    public OpenAppointment cancelAppointment(Appointment toCancel);
+    public TimeSlot cancelAppointment(Appointment toCancel);
     
 
 }

@@ -6,7 +6,7 @@
 package com.sluciak.dentistoffice.data;
 
 import com.sluciak.dentistoffice.models.Appointment;
-import com.sluciak.dentistoffice.service.OpenAppointment;
+import com.sluciak.dentistoffice.service.TimeSlot;
 import com.sluciak.dentistoffice.models.Patient;
 import com.sluciak.dentistoffice.models.Professions;
 import com.sluciak.dentistoffice.models.Professional;
@@ -27,14 +27,22 @@ public class AppointmentFileDao extends FileDao<Appointment> implements Appointm
         super("", 7, true);
     }
 
-    
-    @Override
-    public List<Appointment> findByProfessionalAndDate(LocalDate date, String lastName) throws StorageException{
+    public List<Appointment> findByDate(LocalDate date) throws StorageException {
         date.format(DateTimeFormatter.ofPattern("yyyyddMM"));
         String dateStr = date.toString().replaceAll("-", "");
         String apptFilePath = "appointments_" + dateStr + ".txt";
         super.setPath(apptFilePath);
-        
+
+        return readObject(this::mapToAppointment).stream().collect(Collectors.toList());
+    }
+
+    @Override
+    public List<Appointment> findByProfessionalAndDate(LocalDate date, String lastName) throws StorageException {
+        date.format(DateTimeFormatter.ofPattern("yyyyddMM"));
+        String dateStr = date.toString().replaceAll("-", "");
+        String apptFilePath = "appointments_" + dateStr + ".txt";
+        super.setPath(apptFilePath);
+
         return readObject(this::mapToAppointment).stream()
                 .filter(apt -> apt.getProfessional().getLastName().equalsIgnoreCase(lastName))
                 .collect(Collectors.toList());
@@ -45,7 +53,7 @@ public class AppointmentFileDao extends FileDao<Appointment> implements Appointm
         date.format(DateTimeFormatter.ofPattern("yyyyddMM"));
         String apptFilePath = "appointments_" + date.toString() + ".txt";
         super.setPath(apptFilePath);
-        
+
         return readObject(this::mapToAppointment).stream()
                 .filter(j -> j.getProfessional().getSpecialty().equals(job))
                 .collect(Collectors.toList());
@@ -56,7 +64,7 @@ public class AppointmentFileDao extends FileDao<Appointment> implements Appointm
         date.format(DateTimeFormatter.ofPattern("yyyyddMM"));
         String apptFilePath = "appointments_" + date.toString() + ".txt";
         super.setPath(apptFilePath);
-        
+
         return readObject(this::mapToAppointment).stream()
                 .filter(apt -> apt.getPatient().getLastName().equalsIgnoreCase(lastName))
                 .collect(Collectors.toList());
@@ -68,7 +76,7 @@ public class AppointmentFileDao extends FileDao<Appointment> implements Appointm
     }
 
     @Override
-    public OpenAppointment cancelAppointment(Appointment toCancel) {
+    public TimeSlot cancelAppointment(Appointment toCancel) {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
@@ -82,7 +90,7 @@ public class AppointmentFileDao extends FileDao<Appointment> implements Appointm
      */
     private Appointment mapToAppointment(String[] tokens) {
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("HH:mm");
-        
+
         int id = Integer.parseInt(tokens[0]);
         Patient patient = PersonCompleter.getPatientByID(id);
 
@@ -98,7 +106,7 @@ public class AppointmentFileDao extends FileDao<Appointment> implements Appointm
         appointment.setStartTime(LocalTime.parse(tokens[3], formatter));
         appointment.setEndTime(LocalTime.parse(tokens[4], formatter));
         appointment.setTotalCost(new BigDecimal(tokens[5]));
-        if(tokens.length > 6){
+        if (tokens.length > 6) {
             appointment.setNotes(tokens[6]);
         }
         return appointment;
@@ -114,5 +122,5 @@ public class AppointmentFileDao extends FileDao<Appointment> implements Appointm
                 appt.getEndTime().format(formatter),
                 appt.getNotes());
     }
-
+    
 }

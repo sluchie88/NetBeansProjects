@@ -5,7 +5,7 @@
  */
 package com.sluciak.dentistoffice.models;
 
-import com.sluciak.dentistoffice.service.OpenAppointment;
+import com.sluciak.dentistoffice.service.TimeSlot;
 import java.math.BigDecimal;
 import java.time.LocalTime;
 
@@ -76,7 +76,7 @@ public class Appointment{
         this.notes = notes;
     }
     
-    public void update(OpenAppointment other){
+    public void update(TimeSlot other){
         //may need to fill this in later
         System.out.println("fill this in my boy (update in Appointment class)");
     }

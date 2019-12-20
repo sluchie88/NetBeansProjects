@@ -6,6 +6,7 @@
 package com.sluciak.dentistoffice.data;
 
 import com.sluciak.dentistoffice.models.Patient;
+import java.time.LocalDate;
 import java.util.List;
 
 /**
@@ -15,9 +16,9 @@ import java.util.List;
 public interface PatientDao {
     public List<Patient> findAll() throws StorageException;
     
-    public List<Patient> findByBirthdate();
+    public List<Patient> findByBirthdate(LocalDate bDay) throws StorageException;
     
-    public List<Patient> findByLastName();
+    public List<Patient> findByLastName(String lName) throws StorageException;
     
     Patient add(Patient patient) throws StorageException;
 }

@@ -10,8 +10,9 @@ import com.sluciak.dentistoffice.models.Patient;
 import com.sluciak.dentistoffice.models.Professions;
 import com.sluciak.dentistoffice.models.Professional;
 import com.sluciak.dentistoffice.service.ErrorMessage;
-import com.sluciak.dentistoffice.service.OpenAppointment;
+import com.sluciak.dentistoffice.service.TimeSlot;
 import java.time.format.DateTimeFormatter;
+import java.util.List;
 
 /**
  *
@@ -46,7 +47,7 @@ public class View {
                 apt.getStartTime(), apt.getEndTime()));
     }
 
-    public void displayOpenAppointments(OpenAppointment oa) {
+    public void displayOpenAppointments(TimeSlot oa) {
         aiyo.print(String.format("%s, %s.  %s | %s", oa.getProfessional().getLastName(), 
                 oa.getProfessional().getSpecialty().getJobTitle(),
                 oa.getStartTime(), oa.getEndTime()));
@@ -143,4 +144,45 @@ public class View {
         aiyo.print(string);
     }
 
+    public int displayAndGetChoicePatient(List<Patient> patList) {
+        int min = 1;
+        int max = 1;
+        for(int i = 0; i < patList.size(); i++){
+            System.out.print(i + 1);
+            displayPatient(patList.get(i));
+            max++;
+        }
+        return aiyo.readInt("Enter the number of the paitent you would like to choose [" + min + "-" + max + "]");
+    }
+    
+    public int displayAndGetChoiceProfessional(List<Professional> proList) {
+        int min = 1;
+        int max = 1;
+        for(int i = 0; i < proList.size(); i++){
+            System.out.print(i + 1);
+            displayProfessional(proList.get(i));
+            max++;
+        }
+        return aiyo.readInt("Enter the number of the paitent you would like to choose [" + min + "-" + max + "]");
+    }
+
+    public int displayAndGetChoiceAppointment(List<Appointment> apptList) {
+        int min = 1;
+        int max = 1;
+        for(int i = 0; i < apptList.size(); i++){
+            System.out.print(i + 1);
+            displayAppointment(apptList.get(i));
+            max++;
+        }
+        return aiyo.readInt("Enter the number of the paitent you would like to choose [" + min + "-" + max + "]");
+    }
+
+    public int displayAndGetChoiceProfession() {
+        aiyo.print(Professions.DENTIST.toString());
+        aiyo.print(Professions.HYGENIST.toString());
+        aiyo.print(Professions.ORTHODONTIST.toString());
+        aiyo.print(Professions.ORAL_SURGEON.toString());
+        return aiyo.readInt("Enter [1-4] for which type of professional the patient would like to see.");
+    }
+    
 }

@@ -91,4 +91,13 @@ public class PersonService implements PersonServiceInterface {
            return false;
        }
     }
+
+    public List<Patient> findPatientByLastName(String patientLastName) {
+        try{
+            return patDaon.findByLastName(patientLastName);
+        } catch(StorageException se){
+            System.out.println(se.getMessage());
+            return null;
+        }
+    }
 }
