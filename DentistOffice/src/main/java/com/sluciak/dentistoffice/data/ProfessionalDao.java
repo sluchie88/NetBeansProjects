@@ -6,6 +6,7 @@
 package com.sluciak.dentistoffice.data;
 
 import com.sluciak.dentistoffice.models.Professional;
+import com.sluciak.dentistoffice.models.Professions;
 import java.util.List;
 
 /**
@@ -13,11 +14,11 @@ import java.util.List;
  * @author TomTom
  */
 public interface ProfessionalDao {
-    public List<Professional> findAll();
+    public List<Professional> findAll()  throws StorageException;
     
-    public List<Professional> findByProfession();
+    public List<Professional> findByProfession(Professions prof) throws StorageException;
     
-    public List<Professional> findByLastName();
+    public List<Professional> findByLastName(String lastName) throws StorageException;
     
     public Professional findById();
 }

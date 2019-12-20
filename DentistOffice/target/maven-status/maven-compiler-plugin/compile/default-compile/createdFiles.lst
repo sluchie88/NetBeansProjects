@@ -1,6 +1,7 @@
 com\sluciak\dentistoffice\view\UserIOInterface.class
 com\sluciak\dentistoffice\view\Controller$1.class
 com\sluciak\dentistoffice\view\View.class
+com\sluciak\dentistoffice\service\Validation$1.class
 com\sluciak\dentistoffice\view\UserIO.class
 com\sluciak\dentistoffice\service\AppointmentServiceInterface.class
 com\sluciak\dentistoffice\data\FileDao.class
@@ -8,11 +9,12 @@ com\sluciak\dentistoffice\data\ProfessionalFileDao.class
 com\sluciak\dentistoffice\data\ProfessionalDao.class
 com\sluciak\dentistoffice\service\OpenAppointment.class
 com\sluciak\dentistoffice\view\MainMenuOptions.class
-com\sluciak\dentistoffice\models\Profession.class
 com\sluciak\dentistoffice\data\AppointmentFileDao.class
 com\sluciak\dentistoffice\service\PersonService.class
 com\sluciak\dentistoffice\main\App.class
+com\sluciak\dentistoffice\service\Validation.class
 com\sluciak\dentistoffice\data\StorageException.class
+com\sluciak\dentistoffice\service\Outcome.class
 com\sluciak\dentistoffice\models\Patient.class
 com\sluciak\dentistoffice\models\Professional.class
 com\sluciak\dentistoffice\data\PatientDao.class
@@ -20,7 +22,8 @@ com\sluciak\dentistoffice\view\Controller.class
 com\sluciak\dentistoffice\models\Appointment.class
 com\sluciak\dentistoffice\service\AppointmentService.class
 com\sluciak\dentistoffice\data\PersonCompleter.class
+com\sluciak\dentistoffice\models\Professions.class
 com\sluciak\dentistoffice\data\AppointmentDao.class
 com\sluciak\dentistoffice\data\PatientFileDao.class
+com\sluciak\dentistoffice\service\ErrorMessage.class
 com\sluciak\dentistoffice\service\PersonServiceInterface.class
-com\sluciak\dentistoffice\service\Validations.class

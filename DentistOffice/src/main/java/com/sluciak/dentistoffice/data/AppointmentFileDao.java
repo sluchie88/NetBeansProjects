@@ -12,34 +12,54 @@ import com.sluciak.dentistoffice.models.Professions;
 import com.sluciak.dentistoffice.models.Professional;
 import java.math.BigDecimal;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  *
  * @author TomTom
  */
-public class AppointmentFileDao implements AppointmentDao {
+public class AppointmentFileDao extends FileDao<Appointment> implements AppointmentDao {
 
+    public AppointmentFileDao() {
+        super("", 7, true);
+    }
+
+    
     @Override
-    public List<Appointment> findAll() {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    public List<Appointment> findByProfessionalAndDate(LocalDate date, String lastName) throws StorageException{
+        date.format(DateTimeFormatter.ofPattern("yyyyddMM"));
+        String dateStr = date.toString().replaceAll("-", "");
+        String apptFilePath = "appointments_" + dateStr + ".txt";
+        super.setPath(apptFilePath);
+        
+        return readObject(this::mapToAppointment).stream()
+                .filter(apt -> apt.getProfessional().getLastName().equalsIgnoreCase(lastName))
+                .collect(Collectors.toList());
     }
 
     @Override
-    public List<Appointment> findByDate(LocalDate day) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    public List<Appointment> findByProfession(LocalDate date, Professions job) throws StorageException {
+        date.format(DateTimeFormatter.ofPattern("yyyyddMM"));
+        String apptFilePath = "appointments_" + date.toString() + ".txt";
+        super.setPath(apptFilePath);
+        
+        return readObject(this::mapToAppointment).stream()
+                .filter(j -> j.getProfessional().getSpecialty().equals(job))
+                .collect(Collectors.toList());
     }
 
     @Override
-    public List<Appointment> findByDateAndPatient(LocalDate day, String lastName) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
-
-    @Override
-    public List<Appointment> findOpenAppointments(LocalDate day) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    public List<Appointment> findByDateAndPatient(LocalDate date, String lastName) throws StorageException {
+        date.format(DateTimeFormatter.ofPattern("yyyyddMM"));
+        String apptFilePath = "appointments_" + date.toString() + ".txt";
+        super.setPath(apptFilePath);
+        
+        return readObject(this::mapToAppointment).stream()
+                .filter(apt -> apt.getPatient().getLastName().equalsIgnoreCase(lastName))
+                .collect(Collectors.toList());
     }
 
     @Override
@@ -57,14 +77,17 @@ public class AppointmentFileDao implements AppointmentDao {
     in the appointment class. Only have a patientID, Professional's last name and specialty
     Both are identifiable, but may need to handle adding more info.
     Can use this info to comb through the respective Daos
+    
+    may need to account for blank notes. may make program explode
      */
     private Appointment mapToAppointment(String[] tokens) {
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("HH:mm");
+        
+        int id = Integer.parseInt(tokens[0]);
+        Patient patient = PersonCompleter.getPatientByID(id);
 
-        Patient patient = new Patient();
-        patient.setPatientID(Integer.parseInt(tokens[0]));
-
-        Professional professional = new Professional();
+        String profLastName = tokens[1];
+        Professional professional = PersonCompleter.getProfessionalByLastName(profLastName);
         professional.setLastName(tokens[1]);
         professional.setSpecialty(Professions.fromString(tokens[2]));
 
@@ -72,10 +95,12 @@ public class AppointmentFileDao implements AppointmentDao {
 
         appointment.setPatient(patient);
         appointment.setProfessional(professional);
-        appointment.setStartTime(LocalDateTime.parse(tokens[3], formatter));
-        appointment.setEndTime(LocalDateTime.parse(tokens[4], formatter));
+        appointment.setStartTime(LocalTime.parse(tokens[3], formatter));
+        appointment.setEndTime(LocalTime.parse(tokens[4], formatter));
         appointment.setTotalCost(new BigDecimal(tokens[5]));
-        appointment.setNotes(tokens[6]);
+        if(tokens.length > 6){
+            appointment.setNotes(tokens[6]);
+        }
         return appointment;
     }
 

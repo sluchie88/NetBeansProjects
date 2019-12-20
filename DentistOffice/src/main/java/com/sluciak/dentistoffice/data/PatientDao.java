@@ -13,13 +13,11 @@ import java.util.List;
  * @author TomTom
  */
 public interface PatientDao {
-    public List<Patient> findAll();
+    public List<Patient> findAll() throws StorageException;
     
     public List<Patient> findByBirthdate();
     
     public List<Patient> findByLastName();
     
     Patient add(Patient patient) throws StorageException;
-    
-    boolean update(Patient patient) throws StorageException;
 }

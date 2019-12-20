@@ -11,7 +11,6 @@ import com.sluciak.dentistoffice.models.Professions;
 import com.sluciak.dentistoffice.models.Professional;
 import com.sluciak.dentistoffice.service.ErrorMessage;
 import com.sluciak.dentistoffice.service.OpenAppointment;
-import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 
 /**
@@ -48,7 +47,8 @@ public class View {
     }
 
     public void displayOpenAppointments(OpenAppointment oa) {
-        aiyo.print(String.format("%s, %s.  %s | %s", oa.getProfessional().getLastName(), oa.getProfessional().getSpecialty().getJobTitle(),
+        aiyo.print(String.format("%s, %s.  %s | %s", oa.getProfessional().getLastName(), 
+                oa.getProfessional().getSpecialty().getJobTitle(),
                 oa.getStartTime(), oa.getEndTime()));
         ;
     }
@@ -60,33 +60,35 @@ public class View {
     }
 
     public void displayPatient(Patient p) {
+        String dob = "";
+        if (p.getBirthday() != null) {
+            dob += p.getBirthday().format(DateTimeFormatter.ofPattern("MM/dd/yyyy"));
+        }
         aiyo.print(p.getFirstName() + " "
-                + p.getLastName()
-                + ". DOB: " + p.getBirthday());
+                + p.getLastName() + ". DOB: " + dob);
+        //                + ". DOB: " + p.getBirthday().format(DateTimeFormatter.ofPattern("MM/dd/yyyy")));
 
     }
 
     public Patient makePatient() {
         printHeader("New Patient");
         Patient patient = new Patient();
-        patient.setFirstName(enterFirstName());
-        patient.setLastName(enterLastName());
-        patient.setBirthday(LocalDate.parse(enterBirthdate(), DateTimeFormatter.ofPattern("MM/dd/yyyy")));
+        patient.setFirstName(enterFirstName("Enter the first name of the patient: "));
+        patient.setLastName(enterLastName("Enter the last name of the patient: "));
         return patient;
     }
 
-    public LocalDate enterDate(String prompt) {
+    public String enterDate(String prompt) {
         aiyo.print(prompt);
-        LocalDate date = LocalDate.parse(aiyo.readString("Enter a date in the format MM/DD/YYYY "), DateTimeFormatter.ofPattern("MM/dd/yyyy"));
-        return date;
+        return aiyo.readString("Enter a date in the format MM/DD/YYYY ");
     }
 
-    public String enterLastName() {
-        return aiyo.readString("Enter the last name of the person: ");
+    public String enterLastName(String prompt) {
+        return aiyo.readString(prompt);
     }
 
-    public String enterFirstName() {
-        return aiyo.readString("Enter the first name of the person: ");
+    public String enterFirstName(String prompt) {
+        return aiyo.readString(prompt);
     }
 
     public String enterBirthdate() {
@@ -140,7 +142,5 @@ public class View {
         printHeader("Success");
         aiyo.print(string);
     }
-
-
 
 }

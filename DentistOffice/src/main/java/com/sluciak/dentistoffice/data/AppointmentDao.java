@@ -6,6 +6,7 @@
 package com.sluciak.dentistoffice.data;
 
 import com.sluciak.dentistoffice.models.Appointment;
+import com.sluciak.dentistoffice.models.Professions;
 import com.sluciak.dentistoffice.service.OpenAppointment;
 import java.time.LocalDate;
 import java.util.List;
@@ -16,15 +17,15 @@ import java.util.List;
  */
 public interface AppointmentDao {
     
-    public List<Appointment> findAll();
-
-    public List<Appointment> findByDate(LocalDate day);
-
-    public List<Appointment> findByDateAndPatient(LocalDate day, String lastName);
+    public List<Appointment> findByProfessionalAndDate(LocalDate date, String lastName) throws StorageException;
     
-    public List<Appointment> findOpenAppointments(LocalDate day);
+    public List<Appointment> findByProfession(LocalDate date, Professions job) throws StorageException;
+    
+    public List<Appointment> findByDateAndPatient(LocalDate date, String lastName) throws StorageException;
 
     public Appointment updateAppointment(Appointment change);
     
     public OpenAppointment cancelAppointment(Appointment toCancel);
+    
+
 }

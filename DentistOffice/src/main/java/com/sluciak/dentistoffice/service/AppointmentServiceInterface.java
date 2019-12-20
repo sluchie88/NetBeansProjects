@@ -5,10 +5,25 @@
  */
 package com.sluciak.dentistoffice.service;
 
+import com.sluciak.dentistoffice.data.StorageException;
+import com.sluciak.dentistoffice.models.Appointment;
+import com.sluciak.dentistoffice.models.Professions;
+import java.time.LocalDate;
+import java.util.List;
+
 /**
  *
  * @author TomTom
  */
 public interface AppointmentServiceInterface {
-    
+
+    public List<Appointment> findByDrAndDate(LocalDate date, String drName) throws StorageException;
+
+    public List<Appointment> findByProfession(LocalDate date, Professions job) throws StorageException;
+
+    public List<Appointment> findByDateAndPatient(LocalDate date, String lastName) throws StorageException;
+
+    public Appointment updateAppointment(Appointment change);
+
+    public OpenAppointment cancelAppointment(Appointment toCancel);
 }

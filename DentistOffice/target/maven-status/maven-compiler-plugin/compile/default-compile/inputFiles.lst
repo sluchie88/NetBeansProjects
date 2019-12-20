@@ -14,12 +14,14 @@ C:\Users\slu_d\Documents\NetBeansProjects\DentistOffice\src\main\java\com\slucia
 C:\Users\slu_d\Documents\NetBeansProjects\DentistOffice\src\main\java\com\sluciak\dentistoffice\models\Appointment.java
 C:\Users\slu_d\Documents\NetBeansProjects\DentistOffice\src\main\java\com\sluciak\dentistoffice\view\MainMenuOptions.java
 C:\Users\slu_d\Documents\NetBeansProjects\DentistOffice\src\main\java\com\sluciak\dentistoffice\service\PersonService.java
-C:\Users\slu_d\Documents\NetBeansProjects\DentistOffice\src\main\java\com\sluciak\dentistoffice\models\Profession.java
 C:\Users\slu_d\Documents\NetBeansProjects\DentistOffice\src\main\java\com\sluciak\dentistoffice\service\AppointmentService.java
 C:\Users\slu_d\Documents\NetBeansProjects\DentistOffice\src\main\java\com\sluciak\dentistoffice\service\AppointmentServiceInterface.java
 C:\Users\slu_d\Documents\NetBeansProjects\DentistOffice\src\main\java\com\sluciak\dentistoffice\service\OpenAppointment.java
 C:\Users\slu_d\Documents\NetBeansProjects\DentistOffice\src\main\java\com\sluciak\dentistoffice\service\PersonServiceInterface.java
-C:\Users\slu_d\Documents\NetBeansProjects\DentistOffice\src\main\java\com\sluciak\dentistoffice\service\Validations.java
+C:\Users\slu_d\Documents\NetBeansProjects\DentistOffice\src\main\java\com\sluciak\dentistoffice\service\Validation.java
+C:\Users\slu_d\Documents\NetBeansProjects\DentistOffice\src\main\java\com\sluciak\dentistoffice\service\Outcome.java
+C:\Users\slu_d\Documents\NetBeansProjects\DentistOffice\src\main\java\com\sluciak\dentistoffice\service\ErrorMessage.java
 C:\Users\slu_d\Documents\NetBeansProjects\DentistOffice\src\main\java\com\sluciak\dentistoffice\view\UserIOInterface.java
+C:\Users\slu_d\Documents\NetBeansProjects\DentistOffice\src\main\java\com\sluciak\dentistoffice\models\Professions.java
 C:\Users\slu_d\Documents\NetBeansProjects\DentistOffice\src\main\java\com\sluciak\dentistoffice\data\PersonCompleter.java
 C:\Users\slu_d\Documents\NetBeansProjects\DentistOffice\src\main\java\com\sluciak\dentistoffice\data\StorageException.java

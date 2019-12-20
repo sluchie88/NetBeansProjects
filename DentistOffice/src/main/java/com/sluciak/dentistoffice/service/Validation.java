@@ -51,6 +51,5 @@ public class Validation {
             LocalDateTime startLunch = LocalDateTime.of(date, LocalTime.of(12, 30));
             return start.isBefore(endLunch) || end.isAfter(startLunch);
         }
-    }
-    
+    }    
 }
