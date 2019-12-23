@@ -5,9 +5,10 @@
  */
 package com.sluciak.dentistoffice.service;
 
-import com.sluciak.dentistoffice.data.PatientFileDao;
-import com.sluciak.dentistoffice.data.ProfessionalFileDao;
+import com.sluciak.dentistoffice.data.PatientDao;
+import com.sluciak.dentistoffice.data.ProfessionalDao;
 import com.sluciak.dentistoffice.data.StorageException;
+import com.sluciak.dentistoffice.models.Appointment;
 import com.sluciak.dentistoffice.models.Patient;
 import com.sluciak.dentistoffice.models.Professional;
 import java.util.List;
@@ -18,10 +19,10 @@ import java.util.List;
  */
 public class PersonService implements PersonServiceInterface {
 
-    private final PatientFileDao patDaon;
-    private final ProfessionalFileDao proDao;
+    private final PatientDao patDaon;
+    private final ProfessionalDao proDao;
 
-    public PersonService(PatientFileDao patientDao, ProfessionalFileDao professionalDao) {
+    public PersonService(PatientDao patientDao, ProfessionalDao professionalDao) {
         this.patDaon = patientDao;
         this.proDao = professionalDao;
     }
@@ -56,7 +57,7 @@ public class PersonService implements PersonServiceInterface {
     public Outcome<Professional> professionalExists(String lName){
         Outcome<Professional> mistake = new Outcome<>();
         try{
-            if (proDao.findByLastName(lName).isEmpty()) {
+            if (proDao.findByLastName(lName) == null) {
             mistake.addErrors(lName + " does not exist in this system");
         }
         }catch(StorageException se){

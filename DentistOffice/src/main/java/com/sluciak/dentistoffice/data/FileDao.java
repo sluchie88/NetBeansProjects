@@ -49,7 +49,9 @@ public abstract class FileDao<T> {
             String line;
             while ((line = reader.readLine()) != null) {
                 String[] tokens = line.split(",");
-                if (tokens.length == colCount) {
+                //added - 1 to account for appointments without notes. should not affect
+                //other files
+                if (tokens.length == colCount || tokens.length == colCount - 1) {
                     T object = mapper.apply(tokens);
                     result.add(object);
                 }

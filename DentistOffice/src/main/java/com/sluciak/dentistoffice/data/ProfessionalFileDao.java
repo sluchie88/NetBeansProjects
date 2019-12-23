@@ -34,16 +34,13 @@ public class ProfessionalFileDao extends FileDao<Professional> implements Profes
     }
 
     @Override
-    public List<Professional> findByLastName(String lastName) throws StorageException{
-        return readObject(this::mapToProfessional)
-                .stream().filter(p -> p.getLastName()
-                        .equals(lastName))
-                .collect(Collectors.toList());
+    public Professional findByLastName(String lastName) throws StorageException{
+        return findAll().stream().filter(p -> p.getLastName().equalsIgnoreCase(lastName)).findAny().orElse(null);
     }
 
     @Override
-    public Professional findById() {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    public Professional findById(int id) throws StorageException{
+        return findAll().stream().filter(p -> p.getProfessionalID() == id).findAny().orElse(null);
     }
 
     private String mapToString(Professional prof) {
@@ -64,4 +61,7 @@ public class ProfessionalFileDao extends FileDao<Professional> implements Profes
                 Professions.fromString(tokens[3]),
                 new BigDecimal(tokens[4]));
     }
+
+    
+    
 }

@@ -6,7 +6,6 @@
 package com.sluciak.dentistoffice.data;
 
 import com.sluciak.dentistoffice.models.Appointment;
-import com.sluciak.dentistoffice.service.TimeSlot;
 import com.sluciak.dentistoffice.models.Patient;
 import com.sluciak.dentistoffice.models.Professions;
 import com.sluciak.dentistoffice.models.Professional;
@@ -27,6 +26,19 @@ public class AppointmentFileDao extends FileDao<Appointment> implements Appointm
         super("", 7, true);
     }
 
+    @Override
+    public Appointment addAppointment(LocalDate date, Appointment appt) throws StorageException {
+        List<Appointment> allAppts = findByDate(date);
+        if (!allAppts.contains(appt)) {
+            allAppts.add(appt);
+            allAppts.sort((a, b) -> a.getProfessional().getLastName().compareTo(b.getProfessional().getLastName()));
+            writeObject(allAppts, this::mapToString);
+            return appt;
+        } else {
+            throw new StorageException("This appointment already exists.");
+        }
+    }
+
     public List<Appointment> findByDate(LocalDate date) throws StorageException {
         date.format(DateTimeFormatter.ofPattern("yyyyddMM"));
         String dateStr = date.toString().replaceAll("-", "");
@@ -38,46 +50,97 @@ public class AppointmentFileDao extends FileDao<Appointment> implements Appointm
 
     @Override
     public List<Appointment> findByProfessionalAndDate(LocalDate date, String lastName) throws StorageException {
+        List<Appointment> forDate = findByDate(date);
+        Professional pro = PersonCompleter.getProfessionalByLastName(lastName);
+        boolean found = false;
+        for (Appointment apt : forDate) {
+            if (apt.getProfessional().getProfessionalID() == pro.getProfessionalID()) {
+                found = true;
+
+            }
+
+        }
+        if (found) {
+            return forDate.stream()
+                    .filter(a -> a.getProfessional().getLastName().equals(lastName))
+                    .collect(Collectors.toList());
+        } else {
+            throw new StorageException("Professional does not exist.");
+        }
+    }
+
+    @Override
+    public List<Appointment> findByProfession(LocalDate date, Professions job) throws StorageException {
         date.format(DateTimeFormatter.ofPattern("yyyyddMM"));
         String dateStr = date.toString().replaceAll("-", "");
         String apptFilePath = "appointments_" + dateStr + ".txt";
         super.setPath(apptFilePath);
 
         return readObject(this::mapToAppointment).stream()
-                .filter(apt -> apt.getProfessional().getLastName().equalsIgnoreCase(lastName))
-                .collect(Collectors.toList());
+                .filter(p -> p.getProfessional().getSpecialty().equals(job)).collect(Collectors.toList());
     }
 
     @Override
-    public List<Appointment> findByProfession(LocalDate date, Professions job) throws StorageException {
+    public List<Appointment> findByDateAndPatient(LocalDate date, Patient pat) throws StorageException {
+        List<Appointment> forDate = findByDate(date);
+        Patient patty = PersonCompleter.getPatientByID(pat.getPatientID());
+        boolean found = false;
+
+        for (Appointment apt : forDate) {
+            if (apt.getPatient().getPatientID() == patty.getPatientID()) {
+                found = true;
+                break;
+            }
+        }
+        if (found) {
+            return forDate.stream()
+                    .filter(a -> a.getPatient().getPatientID() == pat.getPatientID())
+                    .collect(Collectors.toList());
+        } else {
+            throw new StorageException("Patient does not exist.");
+        }
+    }
+
+    @Override
+    public Appointment updateAppointment(LocalDate date, Appointment old, Appointment newInfo) throws StorageException, Exception {
+        List<Appointment> appts = findByDateAndPatient(date, old.getPatient());
+        List<Appointment> allAppts;
+        if (!appts.isEmpty()) {
+            for (int i = 0; i < appts.size(); i++) {
+                if (theseAppointmentsAreTheSame(appts.get(i), old)) {
+                    appts.remove(i);
+                    appts.add(i, newInfo);
+                    //need to write the appointments to the file;
+                    return addAppointment(date, appts.get(i));
+                }
+            }
+        }
+        return null;
+    }
+
+    @Override
+    public boolean cancelAppointment(LocalDate date, Appointment toCancel) throws StorageException {
         date.format(DateTimeFormatter.ofPattern("yyyyddMM"));
-        String apptFilePath = "appointments_" + date.toString() + ".txt";
+        String dateStr = date.toString().replaceAll("-", "");
+        String apptFilePath = "appointments_" + dateStr + ".txt";
         super.setPath(apptFilePath);
 
-        return readObject(this::mapToAppointment).stream()
-                .filter(j -> j.getProfessional().getSpecialty().equals(job))
-                .collect(Collectors.toList());
-    }
-
-    @Override
-    public List<Appointment> findByDateAndPatient(LocalDate date, String lastName) throws StorageException {
-        date.format(DateTimeFormatter.ofPattern("yyyyddMM"));
-        String apptFilePath = "appointments_" + date.toString() + ".txt";
-        super.setPath(apptFilePath);
-
-        return readObject(this::mapToAppointment).stream()
-                .filter(apt -> apt.getPatient().getLastName().equalsIgnoreCase(lastName))
-                .collect(Collectors.toList());
-    }
-
-    @Override
-    public Appointment updateAppointment(Appointment change) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
-
-    @Override
-    public TimeSlot cancelAppointment(Appointment toCancel) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        List<Appointment> appts;
+        try {
+            appts = findByDate(date);
+        } catch (StorageException ex) {
+            return false;
+        }
+        if (appts.contains(toCancel)) {
+            appts.remove(toCancel);
+            //not sure how to actually write to the file. Syntax is confusing
+            //so apparently pressing buttons until the compiler stops yelling is a valid way
+            //of solving problems. who knew
+            writeObject(appts, (appt) -> this.mapToString(appt));
+            return true;
+        } else {
+            return false;
+        }
     }
 
     /*
@@ -114,13 +177,30 @@ public class AppointmentFileDao extends FileDao<Appointment> implements Appointm
 
     private String mapToString(Appointment appt) {
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("HH:mm");
-        return String.format("%s,%s,%s,%s,%s,%s,%s",
-                appt.getPatient().getPatientID(),
-                appt.getProfessional().getLastName(),
-                appt.getProfessional().getSpecialty().getJobTitle(),
-                appt.getStartTime().format(formatter),
-                appt.getEndTime().format(formatter),
-                appt.getNotes());
+        if (appt.getNotes().equalsIgnoreCase("n/a") || appt.getNotes().isBlank()) {
+            return String.format("%s,%s,%s,%s,%s",
+                    appt.getPatient().getPatientID(),
+                    appt.getProfessional().getLastName(),
+                    appt.getProfessional().getSpecialty().getJobTitle(),
+                    appt.getStartTime().format(formatter),
+                    appt.getEndTime().format(formatter));
+        } else {
+            return String.format("%s,%s,%s,%s,%s,%s",
+                    appt.getPatient().getPatientID(),
+                    appt.getProfessional().getLastName(),
+                    appt.getProfessional().getSpecialty().getJobTitle(),
+                    appt.getStartTime().format(formatter),
+                    appt.getEndTime().format(formatter),
+                    appt.getNotes());
+        }
     }
-    
+    //returns true if values the same. returns false if appointments are different
+
+    private boolean theseAppointmentsAreTheSame(Appointment appt1, Appointment appt2) {
+        return appt1.getStartTime().compareTo(appt2.getStartTime()) == 0
+                && appt1.getEndTime().compareTo(appt2.getEndTime()) == 0
+                && appt1.getPatient().getPatientID() == appt2.getPatient().getPatientID()
+                && appt1.getProfessional().getLastName().equals(appt2.getProfessional().getLastName());
+    }
+
 }

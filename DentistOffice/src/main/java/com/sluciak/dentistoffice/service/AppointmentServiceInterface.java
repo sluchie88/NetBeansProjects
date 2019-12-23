@@ -23,10 +23,10 @@ public interface AppointmentServiceInterface {
 
     public List<Appointment> findByDateAndPatient(LocalDate date, String lastName) throws StorageException;
 
-    public Appointment updateAppointment(Appointment change);
+    public Appointment updateAppointment(LocalDate date, Appointment old, Appointment updated);
 
-    public TimeSlot cancelAppointment(Appointment toCancel);
+    public boolean cancelAppointment(LocalDate date, Appointment toCancel);
 
-     public List<TimeSlot> findOpenAppointments(LocalDate dateOfChoice, Professions title) throws StorageException;
+    public List<TimeSlot> findOpenAppointments(LocalDate dateOfChoice, Professions title) throws StorageException;
 
 }

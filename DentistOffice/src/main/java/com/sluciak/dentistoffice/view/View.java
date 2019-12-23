@@ -47,11 +47,14 @@ public class View {
                 apt.getStartTime(), apt.getEndTime()));
     }
 
-    public void displayOpenAppointments(TimeSlot oa) {
-        aiyo.print(String.format("%s, %s.  %s | %s", oa.getProfessional().getLastName(), 
+    public void displayOpenAppointments(TimeSlot oa, int count) {
+        aiyo.print(String.format(count + ". %s, %s.  %s | %s", oa.getProfessional().getLastName(), 
                 oa.getProfessional().getSpecialty().getJobTitle(),
                 oa.getStartTime(), oa.getEndTime()));
-        ;
+    }
+    
+    public int readChoiceOfOpenAppointments(){
+        return aiyo.readInt("Enter the number of the appointment that works best: \nEnter -1 if you wish to search for a new date.");
     }
 
     public void displayProfessional(Professional pro) {
@@ -148,7 +151,7 @@ public class View {
         int min = 1;
         int max = 1;
         for(int i = 0; i < patList.size(); i++){
-            System.out.print(i + 1);
+            System.out.print(i + 1 + ". ");
             displayPatient(patList.get(i));
             max++;
         }
@@ -178,11 +181,15 @@ public class View {
     }
 
     public int displayAndGetChoiceProfession() {
-        aiyo.print(Professions.DENTIST.toString());
-        aiyo.print(Professions.HYGENIST.toString());
-        aiyo.print(Professions.ORTHODONTIST.toString());
-        aiyo.print(Professions.ORAL_SURGEON.toString());
+        aiyo.print("0. " + Professions.DENTIST.toString());
+        aiyo.print("1. " + Professions.ORTHODONTIST.toString());
+        aiyo.print("2. " + Professions.HYGENIST.toString());
+        aiyo.print("3. " + Professions.ORAL_SURGEON.toString());
         return aiyo.readInt("Enter [1-4] for which type of professional the patient would like to see.");
+    }
+
+    String getDoctorsNotes() {
+        return aiyo.readString("Please enter any notes you would like to add to the appointment. If none, enter n/a");
     }
     
 }

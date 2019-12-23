@@ -13,12 +13,15 @@ import com.sluciak.dentistoffice.service.AppointmentService;
 import com.sluciak.dentistoffice.service.ErrorMessage;
 import com.sluciak.dentistoffice.service.TimeSlot;
 import com.sluciak.dentistoffice.service.PersonService;
+import java.math.BigDecimal;
+import java.math.MathContext;
+import java.math.RoundingMode;
+import java.time.Duration;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 import java.util.List;
-import java.util.Map;
 
 /**
  *
@@ -152,32 +155,44 @@ public class Controller {
         }
 
         //gets profession sought
+        Professions jorb;
         do {
             int pro = view.displayAndGetChoiceProfession();
+            jorb = Professions.fromValue(pro);
             answer = view.readYesNoPrompt("You chose " + Professions.fromValue(pro) + ", is this correct?");
         } while (answer.equalsIgnoreCase("n"));
 
         //loop for entering date and seeing available appointments
+        List<TimeSlot> openings = null;
+        LocalDate dateOfChoice;
         do {
-            LocalDate dateOfChoice = getDateForAppt();
+            dateOfChoice = getDateForAppt();
             try {
-                List<TimeSlot> openings = apptService.findOpenAppointments(dateOfChoice);
+                openings = apptService.findOpenAppointments(dateOfChoice, jorb);
             } catch (StorageException se) {
                 woops.addErrors(se.getMessage());
             }
-
-            //need to get choice somehow
-            answer = "n";
-            if (menuChoice == 0) {
-                answer = view.readYesNoPrompt("Search for another date?");
+            view.printFormat(String.format("%s, %s.  %s | %s", "Name of professional", "Profession", "Start of opening", "End of opening"));
+            for (int i = 0; i < openings.size(); i++) {
+                view.displayOpenAppointments(openings.get(i), i + 1);
             }
+            menuChoice = view.readChoiceOfOpenAppointments();
+            if (menuChoice == -1) {
+                answer = "n";
+            } else {
+                view.printFormat("You chose " + menuChoice + "\n");
+                view.displayOpenAppointments(openings.get(menuChoice - 1), menuChoice);
+                answer = view.readYesNoPrompt("is this correct?");
+            }
+        } while (!answer.equalsIgnoreCase("y"));
 
-        } while (answer.equalsIgnoreCase("y"));
+        if (addAppointment(dateOfChoice, openings.get(menuChoice), patient)) {
+            view.printSuccess("Appointment successfully added.");
+        } else {
+            woops.addErrors("There was an error adding the appointment. Please try again.");
+            view.displayErrorMessage(woops);
+        }
 
-        /*
-        for displaying open appointments
-        view.printFormat(String.format("%s, %s.  %s | %s", "Name of professional", "Profession", "Start of opening", "End of opening"));
-         */
     }
 
     /*
@@ -256,4 +271,22 @@ public class Controller {
         String date = view.enterDate("Enter the date the user wishes to schedule for:");
         return formatDate(date);
     }
-}
+
+    private boolean addAppointment(LocalDate date, TimeSlot openSlot, Patient patient) {
+        Duration leng = Duration.between(openSlot.getStartTime(), openSlot.getEndTime());
+        BigDecimal cost = openSlot.getProfessional().getHourlyRate();
+        BigDecimal length = new BigDecimal(leng.toHours());
+        cost = cost.multiply(length).setScale(2);
+        Appointment appt = new Appointment(
+                openSlot.getStartTime(),
+                openSlot.getEndTime(),
+                cost);
+        appt.setProfessional(openSlot.getProfessional());
+        appt.setPatient(patient);
+        String notes = view.getDoctorsNotes();
+        appt.setNotes(notes);
+        ErrorMessage uhoh = apptService.addNewAppointment(date, appt);
+        return uhoh.hasError();
+        }
+    }
+

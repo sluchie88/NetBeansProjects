@@ -15,13 +15,50 @@ import java.time.LocalTime;
  */
 public class Appointment{
     private Patient patient;
+    private int patID;
     private Professional professional;
+    private String profName;
+    private Professions title;
     private LocalTime startTime;
     private LocalTime endTime;
     private BigDecimal totalCost;
     private String notes;
     
+    public Appointment(){
+        
+    }
 
+    public Appointment(LocalTime startTime, LocalTime endTime, BigDecimal cost){
+
+        this.startTime = startTime;
+        this.endTime = endTime;
+        this.totalCost = cost;
+    }
+    
+    public Appointment(LocalTime startTime, LocalTime endTime, BigDecimal cost, String notes){
+        this.startTime = startTime;
+        this.endTime = endTime;
+        this.totalCost = cost;
+        this.notes = notes;
+    }
+    
+    public Appointment(int patID, String drName, Professions title, LocalTime sTime, LocalTime eTime, BigDecimal cost){
+        this.patID = patID;
+        this.profName = drName;
+        this.title = title;
+        this.startTime = sTime;
+        this.endTime = eTime;
+    }
+    
+    public Appointment(int patID, String drName, Professions title, LocalTime sTime, LocalTime eTime, BigDecimal cost, String notes){
+        this.patID = patID;
+        this.profName = drName;
+        this.title = title;
+        this.startTime = sTime;
+        this.endTime = eTime;
+        this.notes = notes;
+    }
+    
     public Patient getPatient() {
         return patient;
     }

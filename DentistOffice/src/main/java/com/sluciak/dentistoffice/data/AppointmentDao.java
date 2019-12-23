@@ -6,8 +6,8 @@
 package com.sluciak.dentistoffice.data;
 
 import com.sluciak.dentistoffice.models.Appointment;
+import com.sluciak.dentistoffice.models.Patient;
 import com.sluciak.dentistoffice.models.Professions;
-import com.sluciak.dentistoffice.service.TimeSlot;
 import java.time.LocalDate;
 import java.util.List;
 
@@ -17,15 +17,17 @@ import java.util.List;
  */
 public interface AppointmentDao {
     
-    public List<Appointment> findByProfessionalAndDate(LocalDate date, String lastName) throws StorageException;
+    public List<Appointment> findByProfessionalAndDate(LocalDate date, String lastName) throws Exception;
     
     public List<Appointment> findByProfession(LocalDate date, Professions job) throws StorageException;
     
-    public List<Appointment> findByDateAndPatient(LocalDate date, String lastName) throws StorageException;
+    public List<Appointment> findByDateAndPatient(LocalDate date, Patient pat) throws Exception;
 
-    public Appointment updateAppointment(Appointment change);
+    public Appointment updateAppointment(LocalDate date, Appointment old, Appointment newInfo)throws StorageException, Exception;
     
-    public TimeSlot cancelAppointment(Appointment toCancel);
+    public boolean cancelAppointment(LocalDate date, Appointment toCancel)throws StorageException;
+
+    public Appointment addAppointment(LocalDate date, Appointment appt) throws StorageException;
     
 
 }

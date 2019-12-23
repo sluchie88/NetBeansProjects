@@ -5,7 +5,7 @@
  */
 package com.sluciak.dentistoffice.service;
 
-import com.sluciak.dentistoffice.data.AppointmentFileDao;
+import com.sluciak.dentistoffice.data.AppointmentDao;
 import com.sluciak.dentistoffice.data.StorageException;
 import com.sluciak.dentistoffice.models.Appointment;
 import com.sluciak.dentistoffice.models.Professions;
@@ -22,15 +22,23 @@ import java.util.List;
 public class AppointmentService implements AppointmentServiceInterface {
 
     //private final String APPOINTMENT_FILE_PATH;
-    private final AppointmentFileDao apptDao;
+    private final AppointmentDao apptDao;
 
-    public AppointmentService(AppointmentFileDao appointmentDao) {
+    public AppointmentService(AppointmentDao appointmentDao) {
         this.apptDao = appointmentDao;
+    }
+
+    Object addAppointment(Appointment apptN) {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
     @Override
     public List<Appointment> findByDrAndDate(LocalDate date, String drName) throws StorageException {
-        return apptDao.findByProfessionalAndDate(date, drName);
+        try {
+            return apptDao.findByProfessionalAndDate(date, drName);
+        } catch (Exception ex) {
+            return null;
+        }
     }
 
     @Override
@@ -44,12 +52,12 @@ public class AppointmentService implements AppointmentServiceInterface {
     }
 
     @Override
-    public Appointment updateAppointment(Appointment change) {
+    public Appointment updateAppointment(LocalDate date, Appointment old, Appointment updated) {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
     @Override
-    public TimeSlot cancelAppointment(Appointment toCancel) {
+    public boolean cancelAppointment(LocalDate date, Appointment toCancel) {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
@@ -71,10 +79,6 @@ public class AppointmentService implements AppointmentServiceInterface {
     It is absolutely essential to prevent Dental Professionals from being double-booked.
      */
     public List<TimeSlot> findOpenAppointments(LocalDate dateOfChoice, Professions title) throws StorageException {
-        LocalTime openWk = LocalTime.of(7, 30);
-        LocalTime closeWk = LocalTime.of(18, 0);
-        LocalTime openWe = LocalTime.of(8, 30);
-        LocalTime closeWe = LocalTime.of(12, 30);
 
         List<Appointment> allApptsForDate = findByProfession(dateOfChoice, title);
         //allApptsForDate.sort((a, b) -> a.getStartTime().compareTo(b.getStartTime()));
@@ -84,31 +88,64 @@ public class AppointmentService implements AppointmentServiceInterface {
         Think like a linked list. Hold onto previous appointment for comparison's sake
         Compare end time of previous appointment to start time of next appointment
          */
-        for (int i = 0; i < allApptsForDate.size(); i++) {
-            Appointment curr = allApptsForDate.get(i);
-            Appointment nCurr = allApptsForDate.get(i + 1);
+        LocalTime openWE = LocalTime.of(8, 30);
+        LocalTime closeWE = LocalTime.of(12, 30);
+        LocalTime openWD = LocalTime.of(7, 30);
+        LocalTime closeWD = LocalTime.of(18, 00);
+        TimeSlot opening = new TimeSlot();
 
-            //general case
-            if (curr.getProfessional().getProfessionalID() == nCurr.getProfessional().getProfessionalID()) {
-                TimeSlot oa = new TimeSlot();
-                //checks for start and end times the same. no open appointment here
-                if (curr.getEndTime().compareTo(nCurr.getStartTime()) == 0) {
-
-                } //checks for gap between start and end time
-                else if (curr.getEndTime().compareTo(nCurr.getStartTime()) < 0) {
-                    oa.setProfessional(curr.getProfessional());
-                    oa.setStartTime(curr.getEndTime());
-                    oa.setEndTime(nCurr.getStartTime());
-                    allOpenTimes.add(oa);
-                }
-            } else {
-
-            }
-
+        if (dateOfChoice.getDayOfWeek().equals(DayOfWeek.SUNDAY)) {
+            throw new StorageException("We are not open on Sundays. Please pick a new day.");
         }
-        return allOpenTimes;
+
+        //checks for openings at the open time on the weekend
+        if (isWeekend(dateOfChoice)) {
+            allOpenTimes.add(findGapStartOfDay(allApptsForDate.get(0), openWE));
+            for (int i = 0; i < allApptsForDate.size(); i++) {
+                try {
+                    allApptsForDate.get(i + 1);
+                } catch (IndexOutOfBoundsException ioobe) {
+                    allOpenTimes.add(findGapEndOfDay(allApptsForDate.get(i), closeWE));
+                    break;
+                }
+                if (allApptsForDate.get(i).getProfessional().getProfessionalID()
+                        != allApptsForDate.get(i + 1).getProfessional().getProfessionalID()) {
+                    allOpenTimes.add(findGapEndOfDay(allApptsForDate.get(i), closeWE));
+                    allOpenTimes.add(findGapStartOfDay(allApptsForDate.get(i + 1), openWE));
+                } else {
+                    allOpenTimes.add(findGap(allApptsForDate.get(i), allApptsForDate.get(i + 1)));
+                }
+            }
+        } //route for appointments during the week
+        else {
+            allOpenTimes.add(findGapStartOfDay(allApptsForDate.get(0), openWD));
+            for (int i = 0; i < allApptsForDate.size(); i++) {
+                try {
+                    allApptsForDate.get(i + 1);
+                } catch (IndexOutOfBoundsException ioobe) {
+                    allOpenTimes.add(findGapEndOfDay(allApptsForDate.get(i), closeWE));
+                    break;
+                }
+                if (allApptsForDate.get(i).getProfessional().getProfessionalID()
+                        != allApptsForDate.get(i + 1).getProfessional().getProfessionalID()) {
+                    allOpenTimes.add(findGapEndOfDay(allApptsForDate.get(i), closeWD));
+                    allOpenTimes.add(findGapStartOfDay(allApptsForDate.get(i + 1), openWD));
+                } else {
+                    allOpenTimes.add(findGap(allApptsForDate.get(i), allApptsForDate.get(i + 1)));
+                }
+            }
+        }
+        List<TimeSlot> cleaned = new ArrayList<>();
+        for (int i = 0; i < allOpenTimes.size(); i++) {
+            if (allOpenTimes.get(i) != null) {
+                cleaned.add(allOpenTimes.get(i));
+            }
+        }
+        //need to account for lunch
+        return cleaned;
     }
 
+    //checks if date lands on the weekend
     private boolean isWeekend(LocalDate date) {
         return !(date.getDayOfWeek().equals(DayOfWeek.MONDAY)
                 || date.getDayOfWeek().equals(DayOfWeek.TUESDAY)
@@ -117,31 +154,65 @@ public class AppointmentService implements AppointmentServiceInterface {
                 || date.getDayOfWeek().equals(DayOfWeek.FRIDAY));
     }
 
-    private TimeSlot findGap(Appointment first, Appointment second, boolean isWeekend) {
+    /*
+    finds a gap between two appointments. Called to if the professionals are the same.
+    rewrote this several times. Originally had it split between weekday and weekend.
+    then realized I could combine them by having the opening as a parameter. then realized it
+    was stupid because I wasn't checking for end of day appointments....
+    Me am smart.
+     */
+    private TimeSlot findGap(Appointment first, Appointment second) {
 
         TimeSlot opening = new TimeSlot();
-        
-        LocalTime closeWe = LocalTime.of(12, 30);
 
-        LocalTime openWk = LocalTime.of(7, 30);
-        LocalTime closeWk = LocalTime.of(18, 0);
-        
         //checks first appointment in list that it is at opening time
-        if (first.getProfessional().getProfessionalID() != second.getProfessional().getProfessionalID()) {
-            //checks
-            if (isWeekend) {
-                LocalTime openWe = LocalTime.of(8, 30);
-                if (second.getStartTime().compareTo(openWe) > 0) {
-                    opening.setProfessional(second.getProfessional());
-                    opening.setStartTime(openWe);
-                    opening.setEndTime(second.getStartTime());
-                }
-            } else {
-
-            }
+        if (first.getEndTime().compareTo(second.getStartTime()) < 0) {
+            opening.setStartTime(first.getEndTime());
+            opening.setEndTime(second.getStartTime());
+            opening.setProfessional(first.getProfessional());
+            return opening;
         } else {
-
+            return null;
         }
+    }
 
+    /*
+    checks for open appointments at the end of the day
+     */
+    private TimeSlot findGapEndOfDay(Appointment appt, LocalTime close) {
+        TimeSlot lastButLeast = new TimeSlot();
+        if (appt.getEndTime().compareTo(close) < 0) {
+            lastButLeast.setProfessional(appt.getProfessional());
+            lastButLeast.setEndTime(close);
+            lastButLeast.setStartTime(appt.getEndTime());
+            return lastButLeast;
+        } else {
+            return null;
+        }
+    }
+
+    /*
+    checks for open appointments first thing in the morning
+     */
+    private TimeSlot findGapStartOfDay(Appointment appt, LocalTime open) {
+        TimeSlot earlyBird = new TimeSlot();
+        if (appt.getStartTime().compareTo(open) > 0) {
+            earlyBird.setProfessional(appt.getProfessional());
+            earlyBird.setStartTime(open);
+            earlyBird.setEndTime(appt.getStartTime());
+            return earlyBird;
+        } else {
+            return null;
+        }
+    }
+
+    public ErrorMessage addNewAppointment(LocalDate date, Appointment appt) {
+        ErrorMessage aiyah = new ErrorMessage();
+        try{
+            apptDao.addAppointment(date, appt);
+        }catch (StorageException se){
+            aiyah.addErrors(se.getMessage());
+        }
+        return aiyah;
     }
 }

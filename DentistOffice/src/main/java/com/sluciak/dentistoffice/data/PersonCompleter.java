@@ -30,8 +30,7 @@ public class PersonCompleter {
      */
     public static Professional getProfessionalByLastName(String token) {
         try {
-            List<Professional> found = professionalDao.findByLastName(token);
-            return found.get(0);
+            return professionalDao.findByLastName(token);
         } catch (StorageException se) {
             return new Professional();
         }
@@ -39,9 +38,8 @@ public class PersonCompleter {
 
     public static Patient getPatientByID(int ID) {
         try {
-            List<Patient> found = patientDao.findByID(ID);
-            return found.get(0);
-        } catch (StorageException se) {
+            return patientDao.findByID(ID);
+        } catch (Exception se) {
             return new Patient();
         }
     }

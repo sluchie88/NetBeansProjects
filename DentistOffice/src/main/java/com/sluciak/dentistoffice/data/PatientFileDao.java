@@ -8,6 +8,7 @@ package com.sluciak.dentistoffice.data;
 import com.sluciak.dentistoffice.models.Patient;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -25,36 +26,54 @@ public class PatientFileDao
 
     @Override
     public List<Patient> findAll() throws StorageException {
-        return readObject(this::mapToPatient).stream().collect(Collectors.toList());
-
+        List<Patient> patients = readObject(this::mapToPatient).stream().collect(Collectors.toList());
+        if(!patients.isEmpty()){
+            return patients;
+        }else{
+            throw new StorageException("No patients have that birthday");
+        }
     }
 
     @Override
     public List<Patient> findByBirthdate(LocalDate bDay) throws StorageException {
-        return findAll().stream().filter(p -> p.getBirthday().equals(bDay)).collect(Collectors.toList());        
+        return findAll().stream().filter(p -> p.getBirthday().equals(bDay)).collect(Collectors.toList());
     }
 
     @Override
     public List<Patient> findByLastName(String lName) throws StorageException {
-        return findAll().stream().filter(p -> p.getLastName().equalsIgnoreCase(lName)).collect(Collectors.toList());
+        List<Patient> allPats = findAll();
+        List<Patient> foundPats = new ArrayList<>();
+        for (Patient p : allPats) {
+            if (p.getLastName().equals(lName)) {
+                foundPats.add(p);
+            }
+        }
+        if (!foundPats.isEmpty()) {
+            return foundPats;
+        } else {
+            return null;
+        }
     }
 
     @Override
     public Patient add(Patient patient) throws StorageException {
-        
-        int maxID = findAll().stream()
-                .mapToInt(p -> p.getPatientID()).max().orElse(0);
+        if (isNotADuplicate(patient)) {
+            int maxID = findAll().stream()
+                    .mapToInt(p -> p.getPatientID()).max().orElse(0);
 
-        patient.setPatientID(maxID + 1);
+            patient.setPatientID(maxID + 1);
 
-        appendObject(patient, this::mapToString);
-        return patient;
+            appendObject(patient, this::mapToString);
+            return patient;
+
+        }
+        return null;
     }
-    
-    public List<Patient> findByID(int parseInt) throws StorageException{
-        return readObject(this::mapToPatient).stream()
-                .filter(pat -> pat.getPatientID() == parseInt)
-                .collect(Collectors.toList());
+
+    public Patient findByID(int id) throws Exception {
+        return findAll().stream()
+                .filter(pat -> pat.getPatientID() == id)
+                .findFirst().orElse(null);
     }
 
     private String mapToString(Patient patient) {
@@ -76,5 +95,22 @@ public class PatientFileDao
                 dob);//DateofBirth
     }
 
-    
+    private boolean isNotADuplicate(Patient patient) {
+        boolean isNotADupe = true;
+        List<Patient> allPats;
+        try {
+            allPats = findAll();
+        } catch (StorageException ex) {
+            return isNotADupe;
+        }
+        for (Patient p : allPats) {
+            if (patient.getFirstName().equalsIgnoreCase(p.getFirstName())
+                    && patient.getLastName().equalsIgnoreCase(p.getLastName())
+                    && patient.getBirthday().equals(p.getBirthday())) {
+                isNotADupe = false;
+                break;
+            }
+        }
+        return isNotADupe;
+    }
 }

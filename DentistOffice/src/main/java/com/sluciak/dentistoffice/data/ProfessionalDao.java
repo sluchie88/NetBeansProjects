@@ -18,7 +18,7 @@ public interface ProfessionalDao {
     
     public List<Professional> findByProfession(Professions prof) throws StorageException;
     
-    public List<Professional> findByLastName(String lastName) throws StorageException;
+    public Professional findByLastName(String lastName) throws StorageException;
     
-    public Professional findById();
+    public Professional findById(int id) throws StorageException;
 }
