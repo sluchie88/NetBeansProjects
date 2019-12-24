@@ -35,7 +35,7 @@ public class ProfessionalFileDao extends FileDao<Professional> implements Profes
 
     @Override
     public Professional findByLastName(String lastName) throws StorageException{
-        return findAll().stream().filter(p -> p.getLastName().equalsIgnoreCase(lastName)).findAny().orElse(null);
+        return findAll().stream().filter(p -> p.getLastName().contains(lastName)).findAny().orElse(null);
     }
 
     @Override

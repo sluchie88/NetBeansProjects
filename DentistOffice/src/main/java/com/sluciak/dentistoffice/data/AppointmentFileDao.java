@@ -83,11 +83,10 @@ public class AppointmentFileDao extends FileDao<Appointment> implements Appointm
     @Override
     public List<Appointment> findByDateAndPatient(LocalDate date, int id) throws StorageException {
         List<Appointment> forDate = findByDate(date);
-        Patient patty = PersonCompleter.getPatientByID(id);
         boolean found = false;
 
         for (Appointment apt : forDate) {
-            if (apt.getPatient().getPatientID() == patty.getPatientID()) {
+            if (apt.getPatient().getPatientID() == id) {
                 found = true;
                 break;
             }

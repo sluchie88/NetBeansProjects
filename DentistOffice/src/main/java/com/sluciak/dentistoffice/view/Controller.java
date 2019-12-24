@@ -13,16 +13,13 @@ import com.sluciak.dentistoffice.service.AppointmentService;
 import com.sluciak.dentistoffice.service.ErrorMessage;
 import com.sluciak.dentistoffice.service.TimeSlot;
 import com.sluciak.dentistoffice.service.PersonService;
-import com.sluciak.dentistoffice.service.Validation;
 import java.math.BigDecimal;
-import java.math.MathContext;
-import java.math.RoundingMode;
 import java.time.Duration;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
+import java.util.Collection;
 import java.util.List;
 
 /**
@@ -75,24 +72,18 @@ public class Controller {
     name is not very user friendly
      */
     public void displayApptsByDateAndDoctor() {
-        String date;
         String ans;
-        String profName;
+        String profLastName = getLastNameForSearch("Enter the last name of the staff member you are searching for: ");
         ErrorMessage britta = new ErrorMessage();
-        do {
-            date = view.enterDate("Enter the date you would like to check:");
-            ans = view.readYesNoPrompt("You entered " + date + ", is this correct?");
-        } while (!isValidDate(date) || ans.equalsIgnoreCase("n"));
-        do {
-            profName = view.enterFirstName("Enter the last name of the staff member: ");
-            ans = view.readYesNoPrompt("You entered " + profName + ", is this correct?");
-        } while (ans.equalsIgnoreCase("n"));
-        britta = personService.professionalExists(profName);
+        //private method that gets and verifies the date the user wishes to search for
+        LocalDate date = getDateForSearch();
+
+        britta = personService.professionalExists(profLastName);
         if (britta.hasError()) {
             view.displayErrorMessage(britta);
         } else {
             try {
-                List<Appointment> appts = apptService.findByDrAndDate(formatDate(date), profName);
+                List<Appointment> appts = apptService.findByDrAndDate(date, profLastName);
                 view.printFormat(String.format("%s, %s : %s : %s |  %s ",
                         "Patient",
                         "Seeing",
@@ -119,36 +110,21 @@ public class Controller {
     public void viewAppointmentByPatient() {
         String promptAnswer;
         String ynAnswer = "y";
-        ErrorMessage uhoh = new ErrorMessage();
-        LocalDate date = null;
+        ErrorMessage ohNo = new ErrorMessage();
 
-        //takes in date being searched for
-        do {
-            promptAnswer = view.enterDate("Enter the date you would like to look at: ");
-            if (isValidDate(promptAnswer)) {
-                ynAnswer = view.readYesNoPrompt("You entered " + promptAnswer + ", is this correct?");
-                date = formatDate(promptAnswer);
-            } else {
-                view.displayMessage("Date is incorrect format, please try again.");
-            }
-        } while (ynAnswer.equalsIgnoreCase("n"));
-
+        //private method that gets and verifies the date the user wishes to search for
+        LocalDate date = getDateForSearch();
+        
         //takes in patient last name being searched for
-        do {
-            promptAnswer = view.enterLastName("Enter part or all of the last name of the patient: ");
-            uhoh = personService.confirmValidName(promptAnswer);
-            if (uhoh.hasError()) {
-                view.displayErrorMessage(uhoh);
-                uhoh.deleteErrors(uhoh);
-            } else {
-                ynAnswer = view.readYesNoPrompt("You entered " + promptAnswer + ", is this correct?");
-            }
-        } while (ynAnswer.equalsIgnoreCase("n"));
+        String patLastName = getLastNameForSearch("Enter the last name of the patient you are searching for: ");
 
-        List<Patient> matches = personService.findPatientByLastName(promptAnswer);
+        //possible to DRY this method up? used in most controller methods. Abstract method?
+        //displays a menu for the user and returns their choice
+        List<Patient> matches = personService.findPatientByLastName(patLastName);
         for (int i = 0; i < matches.size(); i++) {
             view.displayPatientAndGetChoice(matches.get(i), i);
         }
+        //gets user menu choice
         int menuChoice = view.readChoiceOfOptions("Enter the number of the patient you would like to select.") - 1;
         Patient patient = matches.get(menuChoice);
 
@@ -157,12 +133,12 @@ public class Controller {
         try {
             appts = apptService.findByDateAndPatient(date, patient.getPatientID());
         } catch (StorageException se) {
-            uhoh.addErrors(se.getMessage());
-            view.displayErrorMessage(uhoh);
+            ohNo.addErrors(se.getMessage());
+            view.displayErrorMessage(ohNo);
         }
         if (appts.size() > 0) {
             view.displayMessage(patient.getFirstName() + " " + patient.getLastName() + "'s appointment details:");
-            for(int i = 0; i < appts.size(); i++){
+            for (int i = 0; i < appts.size(); i++) {
                 view.displayAppointment(appts.get(i));
             }
         } else {
@@ -347,4 +323,59 @@ public class Controller {
         ErrorMessage uhoh = apptService.addNewAppointment(date, appt);
         return uhoh.hasError();
     }
+
+    private LocalDate getDateForSearch() {
+        LocalDate date = null;
+        String promptAnswer;
+        String ynAnswer = "n";
+
+        //takes in date being searched for
+        do {
+            promptAnswer = view.enterDate("Enter the date you would like to look at: ");
+            if (isValidDate(promptAnswer)) {
+                ynAnswer = view.readYesNoPrompt("You entered " + promptAnswer + ", is this correct?");
+                date = formatDate(promptAnswer);
+            } else {
+                view.displayMessage("Date is incorrect format, please try again.");
+            }
+        } while (ynAnswer.equalsIgnoreCase("n"));
+        return date;
+    }
+
+    private String getLastNameForSearch(String prompt) {
+        String lastName = null;
+        String ynAnswer = "n";
+
+        ErrorMessage uhoh = new ErrorMessage();
+        do {
+            lastName = view.enterLastName(prompt);
+            uhoh = personService.confirmValidName(lastName);
+            if (uhoh.hasError()) {
+                view.displayErrorMessage(uhoh);
+                uhoh.deleteErrors(uhoh);
+            } else {
+                ynAnswer = view.readYesNoPrompt("You entered " + lastName + ", is this correct?");
+            }
+        } while (ynAnswer.equalsIgnoreCase("n"));
+        return lastName;
+    }
+
+    /*
+    Idea is to create an abstract method that will display items from any type of list and 
+    allow the user to select from them. Issue is passing to the view since
+    patient has different fields than a professional than an appointment than
+    a timeslot. Need to investigate, not imperative that this works
+    
+    public abstract class MenuDisplay<T> {
+
+        public int getMenuSelection(List<T> objs) {
+            for (int i = 0; i < objs.size(); i++) {
+                view.displayObject(objs.get(i), i);
+            }
+            //gets user menu choice
+            int menuChoice = view.readChoiceOfOptions("Enter the number of the patient you would like to select.") - 1;
+            Patient patient = objs.get(menuChoice);
+        }
+    }
+     */
 }
