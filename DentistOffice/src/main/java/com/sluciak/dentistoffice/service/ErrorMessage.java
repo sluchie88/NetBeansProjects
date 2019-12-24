@@ -13,17 +13,24 @@ import java.util.List;
  * @author TomTom
  */
 public class ErrorMessage {
+
     private final ArrayList<String> errorMessages = new ArrayList<>();
-    
-    public void addErrors(String message){
+
+    public void addErrors(String message) {
         errorMessages.add(message);
     }
-    
-    public boolean hasError(){
+
+    public boolean hasError() {
         return errorMessages.size() > 0;
     }
-    
-    public List<String> getErrors(){
+
+    public List<String> getErrors() {
         return new ArrayList<>(errorMessages);
+    }
+
+    public void deleteErrors(ErrorMessage em) {
+        if (em.hasError()) {
+            em.errorMessages.clear();
+        }
     }
 }

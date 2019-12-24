@@ -110,9 +110,9 @@ public class AppointmentFileDaoStub implements AppointmentDao {
      * Test of findByDateAndPatient method, of class AppointmentFileDao.
      */
     @Override
-    public List<Appointment> findByDateAndPatient(LocalDate date, Patient pat) throws StorageException {
+    public List<Appointment> findByDateAndPatient(LocalDate date, int id) throws StorageException {
         List<Appointment> forDate = findByDate(date);
-        Patient patty = PersonCompleter.getPatientByID(pat.getPatientID());
+        Patient patty = PersonCompleter.getPatientByID(id);
         boolean found = false;
 
         for (Appointment apt : forDate) {
@@ -123,7 +123,7 @@ public class AppointmentFileDaoStub implements AppointmentDao {
         }
         if (found) {
             return forDate.stream()
-                    .filter(a -> a.getPatient().getPatientID() == pat.getPatientID())
+                    .filter(a -> a.getPatient().getPatientID() == id)
                     .collect(Collectors.toList());
         } else {
             throw new StorageException("Patient does not exist.");
@@ -135,7 +135,7 @@ public class AppointmentFileDaoStub implements AppointmentDao {
      */
     @Override
     public Appointment updateAppointment(LocalDate date, Appointment old, Appointment newInfo) throws StorageException {
-        List<Appointment> appts = findByDateAndPatient(date, old.getPatient());
+        List<Appointment> appts = findByDateAndPatient(date, old.getPatient().getPatientID());
         List<Appointment> allAppts;
         if (!appts.isEmpty()) {
             for (int i = 0; i < appts.size(); i++) {

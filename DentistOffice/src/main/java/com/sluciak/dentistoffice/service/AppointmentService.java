@@ -8,6 +8,7 @@ package com.sluciak.dentistoffice.service;
 import com.sluciak.dentistoffice.data.AppointmentDao;
 import com.sluciak.dentistoffice.data.StorageException;
 import com.sluciak.dentistoffice.models.Appointment;
+import com.sluciak.dentistoffice.models.Patient;
 import com.sluciak.dentistoffice.models.Professions;
 import java.time.DayOfWeek;
 import java.time.LocalDate;
@@ -47,8 +48,8 @@ public class AppointmentService implements AppointmentServiceInterface {
     }
 
     @Override
-    public List<Appointment> findByDateAndPatient(LocalDate date, String lastName) throws StorageException {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    public List<Appointment> findByDateAndPatient(LocalDate date, int id) throws StorageException {
+        return apptDao.findByDateAndPatient(date, id);
     }
 
     @Override
@@ -97,7 +98,10 @@ public class AppointmentService implements AppointmentServiceInterface {
         if (dateOfChoice.getDayOfWeek().equals(DayOfWeek.SUNDAY)) {
             throw new StorageException("We are not open on Sundays. Please pick a new day.");
         }
-
+        //keeps making my code break and say no open appointments
+//        if(allOpenTimes.isEmpty()){
+//            throw new StorageException("There are no open appointments for this day. Please try another date.");
+//        }
         //checks for openings at the open time on the weekend
         if (isWeekend(dateOfChoice)) {
             allOpenTimes.add(findGapStartOfDay(allApptsForDate.get(0), openWE));
@@ -208,9 +212,9 @@ public class AppointmentService implements AppointmentServiceInterface {
 
     public ErrorMessage addNewAppointment(LocalDate date, Appointment appt) {
         ErrorMessage aiyah = new ErrorMessage();
-        try{
+        try {
             apptDao.addAppointment(date, appt);
-        }catch (StorageException se){
+        } catch (StorageException se) {
             aiyah.addErrors(se.getMessage());
         }
         return aiyah;

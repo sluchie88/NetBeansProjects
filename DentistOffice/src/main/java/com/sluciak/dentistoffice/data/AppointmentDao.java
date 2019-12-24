@@ -21,7 +21,7 @@ public interface AppointmentDao {
     
     public List<Appointment> findByProfession(LocalDate date, Professions job) throws StorageException;
     
-    public List<Appointment> findByDateAndPatient(LocalDate date, Patient pat) throws Exception;
+    public List<Appointment> findByDateAndPatient(LocalDate date, int id) throws StorageException;
 
     public Appointment updateAppointment(LocalDate date, Appointment old, Appointment newInfo)throws StorageException, Exception;
     

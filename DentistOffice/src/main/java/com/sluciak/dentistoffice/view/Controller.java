@@ -13,11 +13,13 @@ import com.sluciak.dentistoffice.service.AppointmentService;
 import com.sluciak.dentistoffice.service.ErrorMessage;
 import com.sluciak.dentistoffice.service.TimeSlot;
 import com.sluciak.dentistoffice.service.PersonService;
+import com.sluciak.dentistoffice.service.Validation;
 import java.math.BigDecimal;
 import java.math.MathContext;
 import java.math.RoundingMode;
 import java.time.Duration;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
@@ -49,7 +51,7 @@ public class Controller {
                     displayApptsByDateAndDoctor();
                     break;
                 case VIEW_APPT:
-                    //viewAppointmentByPatient();
+                    viewAppointmentByPatient();
                     break;
                 case SCHEDULE_APPT:
                     scheduleNewAppointment();
@@ -115,7 +117,57 @@ public class Controller {
     Application displays full Appointment details.
      */
     public void viewAppointmentByPatient() {
+        String promptAnswer;
+        String ynAnswer = "y";
+        ErrorMessage uhoh = new ErrorMessage();
+        LocalDate date = null;
 
+        //takes in date being searched for
+        do {
+            promptAnswer = view.enterDate("Enter the date you would like to look at: ");
+            if (isValidDate(promptAnswer)) {
+                ynAnswer = view.readYesNoPrompt("You entered " + promptAnswer + ", is this correct?");
+                date = formatDate(promptAnswer);
+            } else {
+                view.displayMessage("Date is incorrect format, please try again.");
+            }
+        } while (ynAnswer.equalsIgnoreCase("n"));
+
+        //takes in patient last name being searched for
+        do {
+            promptAnswer = view.enterLastName("Enter part or all of the last name of the patient: ");
+            uhoh = personService.confirmValidName(promptAnswer);
+            if (uhoh.hasError()) {
+                view.displayErrorMessage(uhoh);
+                uhoh.deleteErrors(uhoh);
+            } else {
+                ynAnswer = view.readYesNoPrompt("You entered " + promptAnswer + ", is this correct?");
+            }
+        } while (ynAnswer.equalsIgnoreCase("n"));
+
+        List<Patient> matches = personService.findPatientByLastName(promptAnswer);
+        for (int i = 0; i < matches.size(); i++) {
+            view.displayPatientAndGetChoice(matches.get(i), i);
+        }
+        int menuChoice = view.readChoiceOfOptions("Enter the number of the patient you would like to select.") - 1;
+        Patient patient = matches.get(menuChoice);
+
+        List<Appointment> appts = null;
+        //go into the appointment dao and find the
+        try {
+            appts = apptService.findByDateAndPatient(date, patient.getPatientID());
+        } catch (StorageException se) {
+            uhoh.addErrors(se.getMessage());
+            view.displayErrorMessage(uhoh);
+        }
+        if (appts.size() > 0) {
+            view.displayMessage(patient.getFirstName() + " " + patient.getLastName() + "'s appointment details:");
+            for(int i = 0; i < appts.size(); i++){
+                view.displayAppointment(appts.get(i));
+            }
+        } else {
+            view.displayMessage("There are no appointments for " + patient.getFirstName() + " " + patient.getLastName() + " on this date.");
+        }
     }
 
     /*
@@ -126,6 +178,8 @@ public class Controller {
     Choose a Dental Professional.
     Enter a start and end time for the Appointment.
     Review/confirm. If the user doesn't confirm, the Appointment must not be saved.
+    
+    NEEDS WORK. FACOTR INTO SEVERAL METHODS. THIS IS OOGLAY
      */
     public void scheduleNewAppointment() {
         int menuChoice = 0;
@@ -172,17 +226,22 @@ public class Controller {
             } catch (StorageException se) {
                 woops.addErrors(se.getMessage());
             }
-            view.printFormat(String.format("%s, %s.  %s | %s", "Name of professional", "Profession", "Start of opening", "End of opening"));
-            for (int i = 0; i < openings.size(); i++) {
-                view.displayOpenAppointments(openings.get(i), i + 1);
-            }
-            menuChoice = view.readChoiceOfOpenAppointments();
-            if (menuChoice == -1) {
-                answer = "n";
+            if (!woops.hasError()) {
+                view.printFormat(String.format("%s, %s.  %s | %s", "Name of professional", "Profession", "Start of opening", "End of opening"));
+                for (int i = 0; i < openings.size(); i++) {
+                    view.displayOpenAppointments(openings.get(i), i + 1);
+                }
+                menuChoice = view.readChoiceOfOptions("Enter the number of the appointment that works best: \nEnter -1 if you wish to search for a new date.");
+                if (menuChoice == -1) {
+                    answer = "n";
+                } else {
+                    view.printFormat("You chose " + menuChoice + "\n");
+                    view.displayOpenAppointments(openings.get(menuChoice - 1), menuChoice);
+                    answer = view.readYesNoPrompt("is this correct?");
+                }
             } else {
-                view.printFormat("You chose " + menuChoice + "\n");
-                view.displayOpenAppointments(openings.get(menuChoice - 1), menuChoice);
-                answer = view.readYesNoPrompt("is this correct?");
+                view.displayErrorMessage(woops);
+                answer = "n";
             }
         } while (!answer.equalsIgnoreCase("y"));
 
@@ -287,6 +346,5 @@ public class Controller {
         appt.setNotes(notes);
         ErrorMessage uhoh = apptService.addNewAppointment(date, appt);
         return uhoh.hasError();
-        }
     }
-
+}

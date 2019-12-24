@@ -22,38 +22,32 @@ and open the template in the editor.
 
     <!-- Bean definitions go here -->
    
-    <bean id="userIO" class="com.sluciak.dentistoffice.view" />
+    <bean id="userIO" class="com.sluciak.dentistoffice.view.UserIO" />
     
-    <bean id="view" class="com.sluciak.dentistoffice.view">
+    <bean id="view" class="com.sluciak.dentistoffice.view.View">
         <constructor-arg ref="userIO"/>
     </bean>
    
-    <bean id="patientfiledao" class="com.sluciak.dentistoffice.data">
+    <bean id="patientfiledao" class="com.sluciak.dentistoffice.data.PatientFileDao">
         <constructor-arg value="patients.txt"/>
     </bean>
    
-    <bean id="professionalfiledao" class="com.sluciak.dentistoffice.data">
+    <bean id="professionalfiledao" class="com.sluciak.dentistoffice.data.ProfessionalFileDao">
         <constructor-arg value="professionals.txt"/>
     </bean>
     
-    <bean id="appointmentfiledao" class="com.sluciak.dentistoffice.data" />
-    
-    <bean id="personcompleter" class="com.sluciak.dentistoffice.data">
-        <constructor-arg ref="appointmentfiledao"/>
-        <constructor-arg ref="professionalfiledao" />
-        <constructor-arg ref="patientfiledao" />
-    </bean>
+    <bean id="appointmentfiledao" class="com.sluciak.dentistoffice.data.AppointmentFileDao" />
    
-    <bean id="appointmentservice" class="com.sluciak.dentistoffice.service">
+    <bean id="appointmentservice" class="com.sluciak.dentistoffice.service.AppointmentService">
         <constructor-arg ref="appointmentfiledao"/>
     </bean>
     
-    <bean id="personservice" class="com.sluciak.dentistoffice.service">
+    <bean id="personservice" class="com.sluciak.dentistoffice.service.PersonService">
         <constructor-arg ref="patientfiledao"/>
         <constructor-arg ref="professionalfiledao" />
     </bean>
     
-    <bean id="controller" class="com.sluciak.dentistoffice.view">
+    <bean id="controller" class="com.sluciak.dentistoffice.view.Controller">
         <constructor-arg ref="view"/>
         <constructor-arg ref="appointmentservice" />
         <constructor-arg ref="personservice" />

@@ -40,7 +40,7 @@ public class View {
 
     public void displayAppointment(Appointment apt) {
 
-        aiyo.print(String.format("%s, %s : %s : %s |  %s ",
+        aiyo.print(String.format("%s, %s : %s : %s |  %s \n",
                 apt.getProfessional().getLastName(),
                 apt.getProfessional().getSpecialty().getJobTitle(),
                 apt.getPatient().getLastName(),
@@ -53,8 +53,8 @@ public class View {
                 oa.getStartTime(), oa.getEndTime()));
     }
     
-    public int readChoiceOfOpenAppointments(){
-        return aiyo.readInt("Enter the number of the appointment that works best: \nEnter -1 if you wish to search for a new date.");
+    public int readChoiceOfOptions(String prompt){
+        return aiyo.readInt(prompt);
     }
 
     public void displayProfessional(Professional pro) {
@@ -188,8 +188,17 @@ public class View {
         return aiyo.readInt("Enter [1-4] for which type of professional the patient would like to see.");
     }
 
-    String getDoctorsNotes() {
+    public String getDoctorsNotes() {
         return aiyo.readString("Please enter any notes you would like to add to the appointment. If none, enter n/a");
+    }
+
+    public void displayMessage(String prompt) {
+        aiyo.print(prompt);
+    }
+
+    public void displayPatientAndGetChoice(Patient get, int i) {
+        System.out.print(i + 1 + ". ");
+        displayPatient(get);
     }
     
 }

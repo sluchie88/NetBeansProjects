@@ -71,8 +71,8 @@ public class AppointmentServiceIT {
      */
     @Test
     public void testFindByDateAndPatient() throws Exception {
-        assertNull(apptService.findByDateAndPatient(LocalDate.of(2019, 12, 30), "Sluciak"));
-        assertNotNull(apptService.findByDateAndPatient(LocalDate.of(2019, 12, 30), "Guiso"));
+        assertNull(apptService.findByDateAndPatient(LocalDate.of(2019, 12, 30), 26));
+        assertNotNull(apptService.findByDateAndPatient(LocalDate.of(2019, 12, 30), 6));
     }
 
     /**

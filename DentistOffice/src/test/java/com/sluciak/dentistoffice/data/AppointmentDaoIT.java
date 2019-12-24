@@ -76,9 +76,9 @@ public class AppointmentDaoIT {
     public void testFindByDateAndPatient() throws Exception {
         Patient hass = new Patient(586, "Upton", "Hassall", LocalDate.of(1958, Month.JANUARY, 15));
         Patient nice = new Patient(5000, "Bill", "Thorn", LocalDate.of(1972, Month.MAY, 20));
-        assertTrue(dao.findByDateAndPatient(LocalDate.of(2019, Month.DECEMBER, 30), hass).size() == 1);
+        assertTrue(dao.findByDateAndPatient(LocalDate.of(2019, Month.DECEMBER, 30), hass.getPatientID()).size() == 1);
         try {
-            assertNull(dao.findByDateAndPatient(LocalDate.of(2019, Month.DECEMBER, 30), nice).isEmpty());
+            assertNull(dao.findByDateAndPatient(LocalDate.of(2019, Month.DECEMBER, 30), nice.getPatientID()).isEmpty());
             fail();
         } catch (Exception se) {
             assertTrue(se.getMessage().equals("Patient does not exist."));

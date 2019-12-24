@@ -81,9 +81,9 @@ public class AppointmentFileDao extends FileDao<Appointment> implements Appointm
     }
 
     @Override
-    public List<Appointment> findByDateAndPatient(LocalDate date, Patient pat) throws StorageException {
+    public List<Appointment> findByDateAndPatient(LocalDate date, int id) throws StorageException {
         List<Appointment> forDate = findByDate(date);
-        Patient patty = PersonCompleter.getPatientByID(pat.getPatientID());
+        Patient patty = PersonCompleter.getPatientByID(id);
         boolean found = false;
 
         for (Appointment apt : forDate) {
@@ -94,16 +94,16 @@ public class AppointmentFileDao extends FileDao<Appointment> implements Appointm
         }
         if (found) {
             return forDate.stream()
-                    .filter(a -> a.getPatient().getPatientID() == pat.getPatientID())
+                    .filter(a -> a.getPatient().getPatientID() == id)
                     .collect(Collectors.toList());
         } else {
-            throw new StorageException("Patient does not exist.");
+            throw new StorageException("Patient has no appointment on this day.");
         }
     }
 
     @Override
-    public Appointment updateAppointment(LocalDate date, Appointment old, Appointment newInfo) throws StorageException, Exception {
-        List<Appointment> appts = findByDateAndPatient(date, old.getPatient());
+    public Appointment updateAppointment(LocalDate date, Appointment old, Appointment newInfo) throws StorageException {
+        List<Appointment> appts = findByDateAndPatient(date, old.getPatient().getPatientID());
         List<Appointment> allAppts;
         if (!appts.isEmpty()) {
             for (int i = 0; i < appts.size(); i++) {
@@ -177,8 +177,8 @@ public class AppointmentFileDao extends FileDao<Appointment> implements Appointm
 
     private String mapToString(Appointment appt) {
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("HH:mm");
-        if (appt.getNotes().equalsIgnoreCase("n/a") || appt.getNotes().isBlank()) {
-            return String.format("%s,%s,%s,%s,%s",
+        if (appt.getNotes() == null || appt.getNotes().equalsIgnoreCase("n/a") || appt.getNotes().isBlank()) {
+            return String.format("%s,%s,%s,%s,%s,",
                     appt.getPatient().getPatientID(),
                     appt.getProfessional().getLastName(),
                     appt.getProfessional().getSpecialty().getJobTitle(),

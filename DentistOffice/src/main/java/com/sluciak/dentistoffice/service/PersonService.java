@@ -54,13 +54,13 @@ public class PersonService implements PersonServiceInterface {
         return goofed;
     }
 
-    public Outcome<Professional> professionalExists(String lName){
+    public Outcome<Professional> professionalExists(String lName) {
         Outcome<Professional> mistake = new Outcome<>();
-        try{
+        try {
             if (proDao.findByLastName(lName) == null) {
-            mistake.addErrors(lName + " does not exist in this system");
-        }
-        }catch(StorageException se){
+                mistake.addErrors(lName + " does not exist in this system");
+            }
+        } catch (StorageException se) {
             mistake.addErrors(se.getMessage());
         }
         return mistake;
@@ -86,19 +86,35 @@ public class PersonService implements PersonServiceInterface {
     }
 
     public boolean findProfByLastName(String lName) {
-       try{
-           return proDao.findByLastName(lName) != null;
-       } catch(StorageException se){
-           return false;
-       }
+        try {
+            return proDao.findByLastName(lName) != null;
+        } catch (StorageException se) {
+            return false;
+        }
     }
 
     public List<Patient> findPatientByLastName(String patientLastName) {
-        try{
+        try {
             return patDaon.findByLastName(patientLastName);
-        } catch(StorageException se){
+        } catch (StorageException se) {
             System.out.println(se.getMessage());
             return null;
         }
+    }
+
+    public ErrorMessage confirmValidName(String promptAnswer) {
+        ErrorMessage dunderhead = new ErrorMessage();
+        if (promptAnswer == null || promptAnswer.isBlank() || promptAnswer.isEmpty()) {
+            dunderhead.addErrors("Field cannot be empty. Please enter all or part of a patient's last name.");
+        } else {
+            char[] boop = promptAnswer.toCharArray();
+            for (char c : boop) {
+                if (Character.isDigit(c)) {
+                    dunderhead.addErrors("Names can't contain any numbers. Please try again.");
+                    break;
+                }
+            }
+        }
+        return dunderhead;
     }
 }

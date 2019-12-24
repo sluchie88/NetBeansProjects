@@ -21,7 +21,7 @@ public interface AppointmentServiceInterface {
 
     public List<Appointment> findByProfession(LocalDate date, Professions job) throws StorageException;
 
-    public List<Appointment> findByDateAndPatient(LocalDate date, String lastName) throws StorageException;
+   public List<Appointment> findByDateAndPatient(LocalDate date, int id) throws StorageException;
 
     public Appointment updateAppointment(LocalDate date, Appointment old, Appointment updated);
 

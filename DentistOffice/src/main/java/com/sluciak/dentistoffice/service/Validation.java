@@ -5,10 +5,13 @@
  */
 package com.sluciak.dentistoffice.service;
 
+import com.sluciak.dentistoffice.models.Professions;
 import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
 
 /**
  *
@@ -51,5 +54,14 @@ public class Validation {
             LocalDateTime startLunch = LocalDateTime.of(date, LocalTime.of(12, 30));
             return start.isBefore(endLunch) || end.isAfter(startLunch);
         }
-    }    
+    }
+    
+    public static boolean isAnOkayLengthAppointment(LocalTime start, LocalTime end, Professions prof){
+        boolean itsOkay = false;
+        
+        //fill in the guttyworks
+        
+        return itsOkay;
+    }
+
 }
