@@ -54,7 +54,7 @@ public class Controller {
                     scheduleNewAppointment();
                     break;
                 case UPDATE_APPT:
-                    //updateAppointment();
+                    updateAppointment();
                     break;
                 case CREATE_PATIENT:
                     createNewPatient();
@@ -114,7 +114,7 @@ public class Controller {
 
         //private method that gets and verifies the date the user wishes to search for
         LocalDate date = getDateForSearch();
-        
+
         //takes in patient last name being searched for
         String patLastName = getLastNameForSearch("Enter the last name of the patient you are searching for: ");
 
@@ -122,7 +122,7 @@ public class Controller {
         //displays a menu for the user and returns their choice
         List<Patient> matches = personService.findPatientByLastName(patLastName);
         for (int i = 0; i < matches.size(); i++) {
-            view.displayPatientAndGetChoice(matches.get(i), i);
+            view.displayPatientInMenu(matches.get(i), i);
         }
         //gets user menu choice
         int menuChoice = view.readChoiceOfOptions("Enter the number of the patient you would like to select.") - 1;
@@ -235,9 +235,56 @@ public class Controller {
     Choose a Customer.
     Choose an Appointment.
     Allow a Dental Professional or User to add notes to the Appointment or change its total cost
+    
+    issue with displaying appointment info. need to show cost and notes
      */
     public void updateAppointment() {
+        String promptAnswer;
+        String ynAnswer = "y";
+        ErrorMessage oopsieDaisy = new ErrorMessage();
 
+        //private method that gets and verifies the date the user wishes to search for
+        LocalDate date = getDateForSearch();
+
+        //takes in patient last name being searched for
+        String patLastName = getLastNameForSearch("Enter the last name of the patient you are searching for: ");
+
+        List<Patient> matches = personService.findPatientByLastName(patLastName);
+        for (int i = 0; i < matches.size(); i++) {
+            view.displayPatientInMenu(matches.get(i), i);
+        }
+        //gets user menu choice
+        int menuChoice = view.readChoiceOfOptions("Enter the number of the patient you would like to select.") - 1;
+        Patient patient = matches.get(menuChoice);
+
+        List<Appointment> appts = null;
+        //go into the appointment dao and find the
+        try {
+            appts = apptService.findByDateAndPatient(date, patient.getPatientID());
+        } catch (StorageException se) {
+            oopsieDaisy.addErrors(se.getMessage());
+            view.displayErrorMessage(oopsieDaisy);
+        }
+        if (appts != null && appts.size() > 0) {
+            //display menu function
+            for(int i = 0; i < appts.size(); i++){
+                view.displayAppointmentInMenu(appts.get(i), i);
+            }
+            menuChoice = view.readChoiceOfOptions("Enter the number of the appointment you would like to edit.") - 1;
+            Appointment edited = appts.get(menuChoice);
+            edited = view.displayAndGetAppointmentInformation(edited);
+
+            oopsieDaisy = apptService.updateAppointment(date, edited);
+            if(oopsieDaisy.hasError()){
+                view.displayErrorMessage(oopsieDaisy);
+            }else{
+                view.printSuccess("Appointment updated successfully!");
+            }
+
+        } else {
+            oopsieDaisy.addErrors("Unable to locate any messages on the date given. Please try agian with another day or patient.");
+            view.displayErrorMessage(oopsieDaisy);
+        }
     }
 
     /*
@@ -320,7 +367,7 @@ public class Controller {
         appt.setPatient(patient);
         String notes = view.getDoctorsNotes();
         appt.setNotes(notes);
-        ErrorMessage uhoh = apptService.addNewAppointment(date, appt);
+        ErrorMessage uhoh = apptService.addAppointment(date, appt);
         return uhoh.hasError();
     }
 

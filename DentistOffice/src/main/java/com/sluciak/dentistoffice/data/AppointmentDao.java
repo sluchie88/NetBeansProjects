@@ -23,7 +23,7 @@ public interface AppointmentDao {
     
     public List<Appointment> findByDateAndPatient(LocalDate date, int id) throws StorageException;
 
-    public Appointment updateAppointment(LocalDate date, Appointment old, Appointment newInfo)throws StorageException, Exception;
+    public Appointment updateAppointment(LocalDate date, Appointment newInfo) throws StorageException;
     
     public boolean cancelAppointment(LocalDate date, Appointment toCancel)throws StorageException;
 

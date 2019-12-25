@@ -83,8 +83,8 @@ public class AppointmentServiceIT {
         Appointment appt1 = new Appointment(3, "Gergolet", Professions.HYGENIST, LocalTime.of(10, 00), LocalTime.of(10, 30), new BigDecimal("80.00"));
         Appointment appt2 = new Appointment(3, "Gergolet", Professions.HYGENIST, LocalTime.of(10, 00), LocalTime.of(10, 30), new BigDecimal("80.00"), "needs to start flossing");
 
-        assertNull(apptService.updateAppointment(LocalDate.of(2019, 12, 30), appt1, appt1));
-        assertNotNull(apptService.updateAppointment(LocalDate.of(2019, 12, 30), appt1, appt2));
+        assertNull(apptService.updateAppointment(LocalDate.of(2019, 12, 30), appt1));
+        assertNotNull(apptService.updateAppointment(LocalDate.of(2019, 12, 30), appt2));
     }
 
     /**
@@ -97,7 +97,7 @@ public class AppointmentServiceIT {
         assertTrue(apptService.cancelAppointment(LocalDate.of(2019, 12, 30), appt2));
         assertFalse(apptService.cancelAppointment(LocalDate.of(2019, 12, 30), appt2));
 
-        apptService.addAppointment(appt2);
+        apptService.addAppointment(LocalDate.of(2019, 12, 30), appt2);
     }
 
     @Test
@@ -105,8 +105,8 @@ public class AppointmentServiceIT {
         Appointment appt2 = new Appointment(3, "Gergolet", Professions.HYGENIST, LocalTime.of(10, 00), LocalTime.of(10, 30), new BigDecimal("80.00"), "needs to start flossing");
         Appointment apptN = new Appointment(7, "Lidstone", Professions.HYGENIST, LocalTime.of(8, 30), LocalTime.of(9, 00), new BigDecimal("80.00"), "needs to start flossing");
 
-        assertNull(apptService.addAppointment(appt2));
-        assertNotNull(apptService.addAppointment(apptN));
+        assertNull(apptService.addAppointment(LocalDate.of(2019, 12, 30), appt2));
+        assertNotNull(apptService.addAppointment(LocalDate.of(2019, 12, 30), apptN));
     }
 
     /**

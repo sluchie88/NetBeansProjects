@@ -5,6 +5,7 @@
  */
 package com.sluciak.dentistoffice.service;
 
+import com.sluciak.dentistoffice.models.Appointment;
 import com.sluciak.dentistoffice.models.Professions;
 import java.time.DayOfWeek;
 import java.time.LocalDate;
@@ -12,6 +13,7 @@ import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
+import java.util.List;
 
 /**
  *
@@ -55,13 +57,31 @@ public class Validation {
             return start.isBefore(endLunch) || end.isAfter(startLunch);
         }
     }
-    
-    public static boolean isAnOkayLengthAppointment(LocalTime start, LocalTime end, Professions prof){
+
+    public static boolean isAnOkayLengthAppointment(LocalTime start, LocalTime end, Professions prof) {
         boolean itsOkay = false;
-        
+
         //fill in the guttyworks
-        
         return itsOkay;
+    }
+
+    /*
+    
+    */
+    public static boolean exactAppointmentAlreadyExists(List<Appointment> allAppts, Appointment appt) {
+        boolean exists = false;
+        for (Appointment a : allAppts) {
+            if (a.getPatient().getPatientID() == appt.getPatient().getPatientID()
+                    && a.getProfessional().getProfessionalID() == appt.getProfessional().getProfessionalID() 
+                    && a.getStartTime().compareTo(appt.getStartTime()) != 0
+                    && a.getEndTime().compareTo(appt.getEndTime()) != 0
+                    && a.getTotalCost().equals(appt.getTotalCost()) 
+                    && a.getNotes().equals(appt.getNotes())) {
+                exists = true;
+            }
+        }
+
+        return exists;
     }
 
 }

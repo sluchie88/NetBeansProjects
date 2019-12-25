@@ -9,6 +9,7 @@ import com.sluciak.dentistoffice.models.Appointment;
 import com.sluciak.dentistoffice.models.Patient;
 import com.sluciak.dentistoffice.models.Professions;
 import com.sluciak.dentistoffice.models.Professional;
+import com.sluciak.dentistoffice.service.Validation;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalTime;
@@ -101,22 +102,43 @@ public class AppointmentFileDao extends FileDao<Appointment> implements Appointm
     }
 
     @Override
-    public Appointment updateAppointment(LocalDate date, Appointment old, Appointment newInfo) throws StorageException {
-        List<Appointment> appts = findByDateAndPatient(date, old.getPatient().getPatientID());
-        List<Appointment> allAppts;
-        if (!appts.isEmpty()) {
-            for (int i = 0; i < appts.size(); i++) {
-                if (theseAppointmentsAreTheSame(appts.get(i), old)) {
-                    appts.remove(i);
-                    appts.add(i, newInfo);
-                    //need to write the appointments to the file;
-                    return addAppointment(date, appts.get(i));
-                }
+    /*
+    went out of bounds, unsure why
+     */
+    public Appointment updateAppointment(LocalDate date, Appointment newInfo) throws StorageException {
+        List<Appointment> allAppts = findByDate(date);
+        int index = -1;
+        //originally used indexof but kept returning -1. something with how the old and new appts were
+        //getting set in the view. couldn't find a way to fix that so this was my next best solution
+        for (int i = 0; i < allAppts.size(); i++) {
+            Appointment curr = allAppts.get(i);
+            if (curr.getPatient().getPatientID() == newInfo.getPatient().getPatientID()
+                    && curr.getProfessional().getProfessionalID() == newInfo.getProfessional().getProfessionalID()
+                    && curr.getStartTime().compareTo(newInfo.getStartTime()) == 0
+                    && curr.getEndTime().compareTo(newInfo.getEndTime()) == 0) {
+                index = i;
+                break;
             }
         }
-        return null;
+        if (index >= 0) {
+            allAppts.remove(index);
+            allAppts.add(index, newInfo);
+            try {
+                writeObject(allAppts, this::mapToString);
+            } catch (StorageException se) {
+                throw new StorageException("Unable to save changes to database");
+            }
+        } else {
+            throw new StorageException("Unable to locate original appointment. Please try again.");
+        }
+        return newInfo;
     }
 
+    /*
+    if(!Validation.exactAppointmentAlreadyExists(allAppts, appt)){
+            all
+        }
+     */
     @Override
     public boolean cancelAppointment(LocalDate date, Appointment toCancel) throws StorageException {
         date.format(DateTimeFormatter.ofPattern("yyyyddMM"));
@@ -177,29 +199,23 @@ public class AppointmentFileDao extends FileDao<Appointment> implements Appointm
     private String mapToString(Appointment appt) {
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("HH:mm");
         if (appt.getNotes() == null || appt.getNotes().equalsIgnoreCase("n/a") || appt.getNotes().isBlank()) {
-            return String.format("%s,%s,%s,%s,%s,",
-                    appt.getPatient().getPatientID(),
-                    appt.getProfessional().getLastName(),
-                    appt.getProfessional().getSpecialty().getJobTitle(),
-                    appt.getStartTime().format(formatter),
-                    appt.getEndTime().format(formatter));
-        } else {
-            return String.format("%s,%s,%s,%s,%s,%s",
+            return String.format("%s,%s,%s,%s,%s,%s,",
                     appt.getPatient().getPatientID(),
                     appt.getProfessional().getLastName(),
                     appt.getProfessional().getSpecialty().getJobTitle(),
                     appt.getStartTime().format(formatter),
                     appt.getEndTime().format(formatter),
+                    appt.getTotalCost());
+        } else {
+            return String.format("%s,%s,%s,%s,%s,%s,%s",
+                    appt.getPatient().getPatientID(),
+                    appt.getProfessional().getLastName(),
+                    appt.getProfessional().getSpecialty().getJobTitle(),
+                    appt.getStartTime().format(formatter),
+                    appt.getEndTime().format(formatter),
+                    appt.getTotalCost(),
                     appt.getNotes());
         }
-    }
-    //returns true if values the same. returns false if appointments are different
-
-    private boolean theseAppointmentsAreTheSame(Appointment appt1, Appointment appt2) {
-        return appt1.getStartTime().compareTo(appt2.getStartTime()) == 0
-                && appt1.getEndTime().compareTo(appt2.getEndTime()) == 0
-                && appt1.getPatient().getPatientID() == appt2.getPatient().getPatientID()
-                && appt1.getProfessional().getLastName().equals(appt2.getProfessional().getLastName());
     }
 
 }

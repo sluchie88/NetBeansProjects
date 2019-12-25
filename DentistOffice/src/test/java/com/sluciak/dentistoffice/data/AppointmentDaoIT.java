@@ -94,8 +94,8 @@ public class AppointmentDaoIT {
         Appointment apptB = new Appointment(725, "Dearn", Professions.DENTIST, LocalTime.of(11, 15), LocalTime.of(12, 30), new BigDecimal("275.00"));
         Appointment apptC = new Appointment(1312, "O'Dunneen", Professions.DENTIST, LocalTime.of(8, 30), LocalTime.of(8, 45), new BigDecimal("43.75"), "followup on pre-decay");
         try {
-            assertNotNull(dao.updateAppointment(LocalDate.of(2019, Month.DECEMBER, 30), apptA, apptB));
-            assertNull(dao.updateAppointment(LocalDate.of(2019, Month.DECEMBER, 30), apptB, apptC));
+            assertNotNull(dao.updateAppointment(LocalDate.of(2019, Month.DECEMBER, 30), apptB));
+            assertNull(dao.updateAppointment(LocalDate.of(2019, Month.DECEMBER, 30), apptB));
         } catch (Exception se) {
             System.out.println("Exception caught for Updating Appointment");
         }

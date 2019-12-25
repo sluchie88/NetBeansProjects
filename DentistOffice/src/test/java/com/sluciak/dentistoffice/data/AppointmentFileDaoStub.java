@@ -9,20 +9,12 @@ import com.sluciak.dentistoffice.models.Appointment;
 import com.sluciak.dentistoffice.models.Patient;
 import com.sluciak.dentistoffice.models.Professional;
 import com.sluciak.dentistoffice.models.Professions;
-import com.sluciak.dentistoffice.service.TimeSlot;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalTime;
-import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.Test;
-import static org.junit.jupiter.api.Assertions.*;
 
 /**
  *
@@ -48,8 +40,9 @@ public class AppointmentFileDaoStub implements AppointmentDao {
         appts.add(new Appointment(7, "Woodfield", Professions.ORAL_SURGEON, LocalTime.of(9, 00), LocalTime.of(11, 00), new BigDecimal("650.00")));
     }
 
+    @Override
     public Appointment addAppointment(LocalDate date, Appointment appt) throws StorageException {
-        List<Appointment> allAppts = findByDate(date);
+        List<Appointment> allAppts = appts;
         if (!allAppts.contains(appt)) {
             allAppts.add(appt);
             allAppts.sort((a, b) -> a.getProfessional().getLastName().compareTo(b.getProfessional().getLastName()));
@@ -134,12 +127,12 @@ public class AppointmentFileDaoStub implements AppointmentDao {
      * Test of updateAppointment method, of class AppointmentFileDao.
      */
     @Override
-    public Appointment updateAppointment(LocalDate date, Appointment old, Appointment newInfo) throws StorageException {
-        List<Appointment> appts = findByDateAndPatient(date, old.getPatient().getPatientID());
+    public Appointment updateAppointment(LocalDate date, Appointment newInfo) throws StorageException {
+        List<Appointment> appts = findByDateAndPatient(date, newInfo.getPatient().getPatientID());
         List<Appointment> allAppts;
         if (!appts.isEmpty()) {
             for (int i = 0; i < appts.size(); i++) {
-                if (theseAppointmentsAreTheSame(appts.get(i), old)) {
+                if (theseAppointmentsAreTheSame(appts.get(i), newInfo)) {
                     appts.remove(i);
                     appts.add(i, newInfo);
                     //need to write the appointments to the file;

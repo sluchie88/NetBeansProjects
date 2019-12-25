@@ -11,6 +11,7 @@ import com.sluciak.dentistoffice.models.Professions;
 import com.sluciak.dentistoffice.models.Professional;
 import com.sluciak.dentistoffice.service.ErrorMessage;
 import com.sluciak.dentistoffice.service.TimeSlot;
+import java.math.BigDecimal;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 
@@ -48,12 +49,12 @@ public class View {
     }
 
     public void displayOpenAppointments(TimeSlot oa, int count) {
-        aiyo.print(String.format(count + ". %s, %s.  %s | %s", oa.getProfessional().getLastName(), 
+        aiyo.print(String.format(count + ". %s, %s.  %s | %s", oa.getProfessional().getLastName(),
                 oa.getProfessional().getSpecialty().getJobTitle(),
                 oa.getStartTime(), oa.getEndTime()));
     }
-    
-    public int readChoiceOfOptions(String prompt){
+
+    public int readChoiceOfOptions(String prompt) {
         return aiyo.readInt(prompt);
     }
 
@@ -150,18 +151,18 @@ public class View {
     public int displayAndGetChoicePatient(List<Patient> patList) {
         int min = 1;
         int max = 1;
-        for(int i = 0; i < patList.size(); i++){
+        for (int i = 0; i < patList.size(); i++) {
             System.out.print(i + 1 + ". ");
             displayPatient(patList.get(i));
             max++;
         }
         return aiyo.readInt("Enter the number of the paitent you would like to choose [" + min + "-" + max + "]");
     }
-    
+
     public int displayAndGetChoiceProfessional(List<Professional> proList) {
         int min = 1;
         int max = 1;
-        for(int i = 0; i < proList.size(); i++){
+        for (int i = 0; i < proList.size(); i++) {
             System.out.print(i + 1);
             displayProfessional(proList.get(i));
             max++;
@@ -172,7 +173,7 @@ public class View {
     public int displayAndGetChoiceAppointment(List<Appointment> apptList) {
         int min = 1;
         int max = 1;
-        for(int i = 0; i < apptList.size(); i++){
+        for (int i = 0; i < apptList.size(); i++) {
             System.out.print(i + 1);
             displayAppointment(apptList.get(i));
             max++;
@@ -196,9 +197,47 @@ public class View {
         aiyo.print(prompt);
     }
 
-    public void displayPatientAndGetChoice(Patient get, int i) {
-        System.out.print(i + 1 + ". ");
+    public void displayPatientInMenu(Patient get, int i) {
+        System.out.print((i + 1) + ". ");
         displayPatient(get);
     }
-    
+
+    public Appointment displayAndGetAppointmentInformation(Appointment appt) {
+        aiyo.print("This is the current appointment information:");
+        displayAppointmentWithCostNotes(appt);
+        String ynAns = readYesNoPrompt("Would you like to edit the cost?");
+        if (ynAns.equalsIgnoreCase("y")) {
+            aiyo.print("Current cost: $" + appt.getTotalCost());
+            BigDecimal newCost = new BigDecimal(aiyo.readString("New cost: "));
+            appt.setTotalCost(newCost);
+        }
+        ynAns = readYesNoPrompt("Would you like to edit/add notes?");
+        if (ynAns.equalsIgnoreCase("y")) {
+            if (appt.getNotes() != null || !appt.getNotes().isEmpty()) {
+                aiyo.print("Current notes: " + appt.getNotes());
+            }
+            String newNotes = aiyo.readString("New notes: ");
+            appt.setNotes(newNotes);
+        }
+        return appt;
+    }
+
+    public void displayAppointmentWithCostNotes(Appointment apt) {
+        aiyo.print(String.format("%s, %s : %s : $ %s : %s |  %s \n Notes: " + apt.getNotes(),
+                apt.getProfessional().getLastName(),
+                apt.getProfessional().getSpecialty().getJobTitle(),
+                apt.getPatient().getLastName(),
+                apt.getTotalCost(),
+                apt.getStartTime(), apt.getEndTime()));
+    }
+
+    void displayAppointmentInMenu(Appointment apt, int i) {
+        System.out.print((i + 1) + ". ");
+        aiyo.print(String.format("%s, %s : %s : $ %s : %s |  %s \n Notes: " + apt.getNotes(),
+                apt.getProfessional().getLastName(),
+                apt.getProfessional().getSpecialty().getJobTitle(),
+                apt.getPatient().getLastName(),
+                apt.getTotalCost(),
+                apt.getStartTime(), apt.getEndTime()));
+    }
 }

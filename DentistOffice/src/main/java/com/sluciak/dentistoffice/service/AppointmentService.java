@@ -29,7 +29,8 @@ public class AppointmentService implements AppointmentServiceInterface {
         this.apptDao = appointmentDao;
     }
 
-    Object addAppointment(Appointment apptN) {
+    @Override
+    public ErrorMessage addAppointment(LocalDate date, Appointment apptN) {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
@@ -53,8 +54,15 @@ public class AppointmentService implements AppointmentServiceInterface {
     }
 
     @Override
-    public Appointment updateAppointment(LocalDate date, Appointment old, Appointment updated) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    public ErrorMessage updateAppointment(LocalDate date, Appointment updated) {
+        ErrorMessage aiyah = new ErrorMessage();
+        
+        try {
+            apptDao.updateAppointment(date, updated);
+        } catch (StorageException se) {
+            aiyah.addErrors(se.getMessage());
+        }
+        return aiyah;
     }
 
     @Override
@@ -208,15 +216,5 @@ public class AppointmentService implements AppointmentServiceInterface {
         } else {
             return null;
         }
-    }
-
-    public ErrorMessage addNewAppointment(LocalDate date, Appointment appt) {
-        ErrorMessage aiyah = new ErrorMessage();
-        try {
-            apptDao.addAppointment(date, appt);
-        } catch (StorageException se) {
-            aiyah.addErrors(se.getMessage());
-        }
-        return aiyah;
     }
 }

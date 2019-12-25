@@ -17,13 +17,15 @@ import java.util.List;
  */
 public interface AppointmentServiceInterface {
 
+    public ErrorMessage addAppointment(LocalDate date, Appointment apptN);
+
     public List<Appointment> findByDrAndDate(LocalDate date, String drName) throws StorageException;
 
     public List<Appointment> findByProfession(LocalDate date, Professions job) throws StorageException;
 
-   public List<Appointment> findByDateAndPatient(LocalDate date, int id) throws StorageException;
+    public List<Appointment> findByDateAndPatient(LocalDate date, int id) throws StorageException;
 
-    public Appointment updateAppointment(LocalDate date, Appointment old, Appointment updated);
+    public ErrorMessage updateAppointment(LocalDate date, Appointment updated);
 
     public boolean cancelAppointment(LocalDate date, Appointment toCancel);
 
