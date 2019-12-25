@@ -141,27 +141,31 @@ public class AppointmentFileDao extends FileDao<Appointment> implements Appointm
      */
     @Override
     public boolean cancelAppointment(LocalDate date, Appointment toCancel) throws StorageException {
-        date.format(DateTimeFormatter.ofPattern("yyyyddMM"));
-        String dateStr = date.toString().replaceAll("-", "");
-        String apptFilePath = "appointments_" + dateStr + ".txt";
-        super.setPath(apptFilePath);
-
-        List<Appointment> appts;
-        try {
-            appts = findByDate(date);
-        } catch (StorageException ex) {
-            return false;
+        List<Appointment> allAppts = findByDate(date);
+        int index = -1;
+        //originally used indexof but kept returning -1. something with how the old and new appts were
+        //getting set in the view. couldn't find a way to fix that so this was my next best solution
+        for (int i = 0; i < allAppts.size(); i++) {
+            Appointment curr = allAppts.get(i);
+            if (curr.getPatient().getPatientID() == toCancel.getPatient().getPatientID()
+                    && curr.getProfessional().getProfessionalID() == toCancel.getProfessional().getProfessionalID()
+                    && curr.getStartTime().compareTo(toCancel.getStartTime()) == 0
+                    && curr.getEndTime().compareTo(toCancel.getEndTime()) == 0) {
+                index = i;
+                break;
+            }
         }
-        if (appts.contains(toCancel)) {
-            appts.remove(toCancel);
-            //not sure how to actually write to the file. Syntax is confusing
-            //so apparently pressing buttons until the compiler stops yelling is a valid way
-            //of solving problems. who knew
-            writeObject(appts, (appt) -> this.mapToString(appt));
-            return true;
+        if (index >= 0) {
+            allAppts.remove(index);
+            try {
+                writeObject(allAppts, this::mapToString);
+            } catch (StorageException se) {
+                throw new StorageException("Unable to save changes to the database.");
+            }
         } else {
-            return false;
+            throw new StorageException("Unable to locate specified appointment. Please try again later.");
         }
+        return allAppts.contains(toCancel);
     }
 
     /*

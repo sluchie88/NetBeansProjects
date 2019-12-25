@@ -60,7 +60,7 @@ public class Controller {
                     createNewPatient();
                     break;
                 case CANCEL_APPT:
-                    //cancelAppointment();
+                    cancelAppointment();
                     break;
             }
         } while (menuSelection != MainMenuOptions.EXIT);
@@ -282,7 +282,7 @@ public class Controller {
             }
 
         } else {
-            oopsieDaisy.addErrors("Unable to locate any messages on the date given. Please try agian with another day or patient.");
+            oopsieDaisy.addErrors("Unable to locate any appointments on the date given. Please try agian with another day or patient.");
             view.displayErrorMessage(oopsieDaisy);
         }
     }
@@ -315,10 +315,61 @@ public class Controller {
         }
     }
 
+    //edit, but same basic logic as updating an appointment
     public void cancelAppointment() {
+        String promptAnswer;
+        String ynAnswer = "y";
+        ErrorMessage yaDunGoofed = new ErrorMessage();
 
+        //private method that gets and verifies the date the user wishes to search for
+        LocalDate date = getDateForSearch();
+
+        //takes in patient last name being searched for
+        String patLastName = getLastNameForSearch("Enter the last name of the patient you are searching for: ");
+
+        List<Patient> matches = personService.findPatientByLastName(patLastName);
+        for (int i = 0; i < matches.size(); i++) {
+            view.displayPatientInMenu(matches.get(i), i);
+        }
+        //gets user menu choice
+        int menuChoice = view.readChoiceOfOptions("Enter the number of the patient whose appointment you are canceling.") - 1;
+        Patient patient = matches.get(menuChoice);
+
+        List<Appointment> appts = null;
+        //go into the appointment dao and find the
+        try {
+            appts = apptService.findByDateAndPatient(date, patient.getPatientID());
+        } catch (StorageException se) {
+            yaDunGoofed.addErrors(se.getMessage());
+            view.displayErrorMessage(yaDunGoofed);
+        }
+        if (appts != null && appts.size() > 0) {
+            //display menu function
+            for(int i = 0; i < appts.size(); i++){
+                view.displayAppointmentInMenu(appts.get(i), i);
+            }
+            menuChoice = view.readChoiceOfOptions("Enter the number of the appointment being canceled.") - 1;
+            Appointment cenceling = appts.get(menuChoice);
+
+            yaDunGoofed = apptService.cancelAppointment(date, cenceling);
+            if(yaDunGoofed.hasError()){
+                view.displayErrorMessage(yaDunGoofed);
+            }else{
+                view.printSuccess("Appointment canceled successfully!");
+            }
+
+        } else {
+            yaDunGoofed.addErrors("Unable to locate any appointments on the date given. Please try agian with another day or patient.");
+            view.displayErrorMessage(yaDunGoofed);
+        }
     }
 
+    
+    
+    /***********************
+    *Private Methods Below *
+    ************************/
+    
     private boolean isValidDate(String date) {
         LocalDate day = formatDate(date);
         return day != null;

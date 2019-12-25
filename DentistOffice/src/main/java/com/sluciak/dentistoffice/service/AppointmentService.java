@@ -66,8 +66,19 @@ public class AppointmentService implements AppointmentServiceInterface {
     }
 
     @Override
-    public boolean cancelAppointment(LocalDate date, Appointment toCancel) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    public ErrorMessage cancelAppointment(LocalDate date, Appointment toCancel) {
+        ErrorMessage effinACotton = new ErrorMessage();
+        try{
+            //returns true of unable to remove appointment, false if removed successfully
+            if(!apptDao.cancelAppointment(date, toCancel)){
+                
+            }else{
+                effinACotton.addErrors("Blahblahblah");
+            }
+        }catch (StorageException se){
+            effinACotton.addErrors(se.getMessage());
+        }
+        return effinACotton;
     }
 
     @Override

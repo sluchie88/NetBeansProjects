@@ -6,7 +6,6 @@
 package com.sluciak.dentistoffice.data;
 
 import com.sluciak.dentistoffice.models.Appointment;
-import com.sluciak.dentistoffice.models.Patient;
 import com.sluciak.dentistoffice.models.Professions;
 import java.time.LocalDate;
 import java.util.List;
