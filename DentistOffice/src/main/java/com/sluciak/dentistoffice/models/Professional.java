@@ -77,5 +77,18 @@ public class Professional {
         this.hourlyRate = hourlyRate;
     }
     
-    
+    /*
+    first name
+    last name
+    specialty
+    hourly rate
+    */
+    @Override
+    public String toString(){
+        return String.format("%s %s: %s. $%s an hour.", 
+                this.firstName,
+                this.lastName,
+                this.specialty.getJobTitle(),
+                this.hourlyRate);
+    }
 }

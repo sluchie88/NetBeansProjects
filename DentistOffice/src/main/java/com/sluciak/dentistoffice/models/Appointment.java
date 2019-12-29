@@ -118,4 +118,23 @@ public class Appointment{
         System.out.println("fill this in my boy (update in Appointment class)");
     }
     
+    /*
+    patient last name
+    doctor last name
+    start time
+    end time
+    total cost
+    notes
+    */
+    @Override
+    public String toString(){
+        return String.format("%s seeing %s. %s | %s; $%s\n NOTES: %s", 
+                this.patient.getLastName(),
+                this.profName,
+                this.startTime,
+                this.endTime,
+                this.totalCost,
+                this.notes);
+    }
+    
 }

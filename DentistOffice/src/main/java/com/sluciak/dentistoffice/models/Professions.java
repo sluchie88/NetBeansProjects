@@ -12,7 +12,7 @@ package com.sluciak.dentistoffice.models;
 public enum Professions {
     DENTIST(0, "DENTIST"),
     ORTHODONTIST(1, "ORTHODONTIST"),
-    HYGENIST(2, "HYGENIST"),
+    HYGIENIST(2, "HYGIENIST"),
     ORAL_SURGEON(3, "ORAL_SURGEON");
 
     private final int value;
@@ -47,8 +47,8 @@ public enum Professions {
         } else if(ORTHODONTIST.getJobTitle().equalsIgnoreCase(str)){
             return ORTHODONTIST;
         }
-        else if(HYGENIST.getJobTitle().equalsIgnoreCase(str)){
-            return HYGENIST;
+        else if(HYGIENIST.getJobTitle().equalsIgnoreCase(str)){
+            return HYGIENIST;
         }else{
             return ORAL_SURGEON;
         }

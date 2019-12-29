@@ -19,7 +19,7 @@ import java.util.List;
  *
  * @author TomTom
  */
-public class View {
+public class View<T> {
 
     private final UserIO aiyo;
 
@@ -184,7 +184,7 @@ public class View {
     public int displayAndGetChoiceProfession() {
         aiyo.print("0. " + Professions.DENTIST.toString());
         aiyo.print("1. " + Professions.ORTHODONTIST.toString());
-        aiyo.print("2. " + Professions.HYGENIST.toString());
+        aiyo.print("2. " + Professions.HYGIENIST.toString());
         aiyo.print("3. " + Professions.ORAL_SURGEON.toString());
         return aiyo.readInt("Enter [1-4] for which type of professional the patient would like to see.");
     }
@@ -239,5 +239,16 @@ public class View {
                 apt.getPatient().getLastName(),
                 apt.getTotalCost(),
                 apt.getStartTime(), apt.getEndTime()));
+    }
+
+    
+    /*
+    override toString method for each object type
+    */
+    public int displayMenuAndReadChoiceOfOptions(List<T> listy) {
+        for(int i = 0; i < listy.size(); i++){
+            aiyo.print("[" + (i + 1) + "] " + listy.get(i).toString());
+        }
+        return ((aiyo.readInt("Enter the number of the option you want above: ")) - 1);
     }
 }

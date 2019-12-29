@@ -68,4 +68,16 @@ public class Patient {
         this.birthday = birthday;
     }
 
+    /*
+    first name
+    last name
+    birthdate
+    */
+    @Override
+    public String toString(){
+        return String.format("%s %s, DOB: %s", 
+                this.firstName,
+                this.lastName,
+                this.birthday);
+    }
 }

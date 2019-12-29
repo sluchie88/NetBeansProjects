@@ -63,7 +63,7 @@ public class AppointmentServiceIT {
     @Test
     public void testFindByProfession() throws Exception {
         assertFalse((apptService.findByProfession(LocalDate.of(2019, 12, 30), Professions.ORAL_SURGEON)).size() > 1);
-        assertTrue((apptService.findByProfession(LocalDate.of(2019, 12, 30), Professions.HYGENIST)).size() == 4);
+        assertTrue((apptService.findByProfession(LocalDate.of(2019, 12, 30), Professions.HYGIENIST)).size() == 4);
     }
 
     /**
@@ -80,8 +80,8 @@ public class AppointmentServiceIT {
      */
     @Test
     public void testUpdateAppointment() {
-        Appointment appt1 = new Appointment(3, "Gergolet", Professions.HYGENIST, LocalTime.of(10, 00), LocalTime.of(10, 30), new BigDecimal("80.00"));
-        Appointment appt2 = new Appointment(3, "Gergolet", Professions.HYGENIST, LocalTime.of(10, 00), LocalTime.of(10, 30), new BigDecimal("80.00"), "needs to start flossing");
+        Appointment appt1 = new Appointment(3, "Gergolet", Professions.HYGIENIST, LocalTime.of(10, 00), LocalTime.of(10, 30), new BigDecimal("80.00"));
+        Appointment appt2 = new Appointment(3, "Gergolet", Professions.HYGIENIST, LocalTime.of(10, 00), LocalTime.of(10, 30), new BigDecimal("80.00"), "needs to start flossing");
 
         assertNull(apptService.updateAppointment(LocalDate.of(2019, 12, 30), appt1));
         assertNotNull(apptService.updateAppointment(LocalDate.of(2019, 12, 30), appt2));
@@ -92,7 +92,7 @@ public class AppointmentServiceIT {
      */
     @Test
     public void testCancelAppointment() {
-        Appointment appt2 = new Appointment(3, "Gergolet", Professions.HYGENIST, LocalTime.of(10, 00), LocalTime.of(10, 30), new BigDecimal("80.00"), "needs to start flossing");
+        Appointment appt2 = new Appointment(3, "Gergolet", Professions.HYGIENIST, LocalTime.of(10, 00), LocalTime.of(10, 30), new BigDecimal("80.00"), "needs to start flossing");
 
 //        assertTrue(apptService.cancelAppointment(LocalDate.of(2019, 12, 30), appt2));
 //        assertFalse(apptService.cancelAppointment(LocalDate.of(2019, 12, 30), appt2));
@@ -102,8 +102,8 @@ public class AppointmentServiceIT {
 
     @Test
     public void testAddAppointment() {
-        Appointment appt2 = new Appointment(3, "Gergolet", Professions.HYGENIST, LocalTime.of(10, 00), LocalTime.of(10, 30), new BigDecimal("80.00"), "needs to start flossing");
-        Appointment apptN = new Appointment(7, "Lidstone", Professions.HYGENIST, LocalTime.of(8, 30), LocalTime.of(9, 00), new BigDecimal("80.00"), "needs to start flossing");
+        Appointment appt2 = new Appointment(3, "Gergolet", Professions.HYGIENIST, LocalTime.of(10, 00), LocalTime.of(10, 30), new BigDecimal("80.00"), "needs to start flossing");
+        Appointment apptN = new Appointment(7, "Lidstone", Professions.HYGIENIST, LocalTime.of(8, 30), LocalTime.of(9, 00), new BigDecimal("80.00"), "needs to start flossing");
 
         assertNull(apptService.addAppointment(LocalDate.of(2019, 12, 30), appt2));
         assertNotNull(apptService.addAppointment(LocalDate.of(2019, 12, 30), apptN));

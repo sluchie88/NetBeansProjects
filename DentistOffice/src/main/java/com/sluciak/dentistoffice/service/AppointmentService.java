@@ -8,7 +8,6 @@ package com.sluciak.dentistoffice.service;
 import com.sluciak.dentistoffice.data.AppointmentDao;
 import com.sluciak.dentistoffice.data.StorageException;
 import com.sluciak.dentistoffice.models.Appointment;
-import com.sluciak.dentistoffice.models.Patient;
 import com.sluciak.dentistoffice.models.Professions;
 import java.time.DayOfWeek;
 import java.time.LocalDate;
@@ -31,7 +30,13 @@ public class AppointmentService implements AppointmentServiceInterface {
 
     @Override
     public ErrorMessage addAppointment(LocalDate date, Appointment apptN) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        ErrorMessage chumbawumba = new ErrorMessage();
+        try{
+            apptDao.addAppointment(date, apptN);
+        } catch(StorageException se){
+            chumbawumba.addErrors(se.getMessage());
+        }
+        return chumbawumba;
     }
 
     @Override
@@ -56,7 +61,7 @@ public class AppointmentService implements AppointmentServiceInterface {
     @Override
     public ErrorMessage updateAppointment(LocalDate date, Appointment updated) {
         ErrorMessage aiyah = new ErrorMessage();
-        
+
         try {
             apptDao.updateAppointment(date, updated);
         } catch (StorageException se) {
@@ -68,14 +73,14 @@ public class AppointmentService implements AppointmentServiceInterface {
     @Override
     public ErrorMessage cancelAppointment(LocalDate date, Appointment toCancel) {
         ErrorMessage effinACotton = new ErrorMessage();
-        try{
+        try {
             //returns true of unable to remove appointment, false if removed successfully
-            if(!apptDao.cancelAppointment(date, toCancel)){
-                
-            }else{
+            if (!apptDao.cancelAppointment(date, toCancel)) {
+
+            } else {
                 effinACotton.addErrors("Blahblahblah");
             }
-        }catch (StorageException se){
+        } catch (StorageException se) {
             effinACotton.addErrors(se.getMessage());
         }
         return effinACotton;
@@ -100,8 +105,12 @@ public class AppointmentService implements AppointmentServiceInterface {
      */
     public List<TimeSlot> findOpenAppointments(LocalDate dateOfChoice, Professions title) throws StorageException {
 
+        //redundant check but paranoid. makes sure no appointments are created on a Sunday
+        if (dateOfChoice.getDayOfWeek().equals(DayOfWeek.SUNDAY)) {
+            throw new StorageException("We are not open on Sundays. Please pick a new day.");
+        }
+
         List<Appointment> allApptsForDate = findByProfession(dateOfChoice, title);
-        //allApptsForDate.sort((a, b) -> a.getStartTime().compareTo(b.getStartTime()));
         List<TimeSlot> allOpenTimes = new ArrayList<>();
 
         /*
@@ -114,61 +123,81 @@ public class AppointmentService implements AppointmentServiceInterface {
         LocalTime closeWD = LocalTime.of(18, 00);
         TimeSlot opening = new TimeSlot();
 
-        if (dateOfChoice.getDayOfWeek().equals(DayOfWeek.SUNDAY)) {
-            throw new StorageException("We are not open on Sundays. Please pick a new day.");
+        if (allApptsForDate.isEmpty() || allApptsForDate == null) {
+            throw new StorageException("No appointments found on this date.\nPlease either enter an appointment for this date or try another date.");
         }
-        //keeps making my code break and say no open appointments
-//        if(allOpenTimes.isEmpty()){
-//            throw new StorageException("There are no open appointments for this day. Please try another date.");
-//        }
         //checks for openings at the open time on the weekend
+        List<TimeSlot> open = new ArrayList<>();
         if (isWeekend(dateOfChoice)) {
             allOpenTimes.add(findGapStartOfDay(allApptsForDate.get(0), openWE));
             for (int i = 0; i < allApptsForDate.size(); i++) {
-                try {
-                    allApptsForDate.get(i + 1);
-                } catch (IndexOutOfBoundsException ioobe) {
-                    allOpenTimes.add(findGapEndOfDay(allApptsForDate.get(i), closeWE));
-                    break;
-                }
-                if (allApptsForDate.get(i).getProfessional().getProfessionalID()
-                        != allApptsForDate.get(i + 1).getProfessional().getProfessionalID()) {
-                    allOpenTimes.add(findGapEndOfDay(allApptsForDate.get(i), closeWE));
-                    allOpenTimes.add(findGapStartOfDay(allApptsForDate.get(i + 1), openWE));
-                } else {
-                    allOpenTimes.add(findGap(allApptsForDate.get(i), allApptsForDate.get(i + 1)));
+                if (i + 1 > allApptsForDate.size() - 1) {
+                    open = (findGapEndOfDay(allApptsForDate.get(i), closeWE));
+                    if (open != null) {
+                        open.forEach((ts) -> {
+                            allOpenTimes.add(ts);
+                        });
+                    } else if (allApptsForDate.get(i).getProfessional().getProfessionalID()
+                            != allApptsForDate.get(i + 1).getProfessional().getProfessionalID()) {
+                        open = (findGapEndOfDay(allApptsForDate.get(i), closeWE));
+                        if (open != null) {
+                            open.forEach((ts) -> {
+                                allOpenTimes.add(ts);
+                            });
+                            allOpenTimes.add(findGapStartOfDay(allApptsForDate.get(i + 1), openWE));
+                        } else {
+                            open = findGap(allApptsForDate.get(i), allApptsForDate.get(i + 1));
+                            if (open != null) {
+                                open.forEach((ts) -> {
+                                    allOpenTimes.add(ts);
+                                });
+                            }
+                        }
+                    }
                 }
             }
         } //route for appointments during the week
         else {
             allOpenTimes.add(findGapStartOfDay(allApptsForDate.get(0), openWD));
             for (int i = 0; i < allApptsForDate.size(); i++) {
-                try {
-                    allApptsForDate.get(i + 1);
-                } catch (IndexOutOfBoundsException ioobe) {
-                    allOpenTimes.add(findGapEndOfDay(allApptsForDate.get(i), closeWE));
-                    break;
-                }
-                if (allApptsForDate.get(i).getProfessional().getProfessionalID()
+                if (i + 1 > allApptsForDate.size() - 1) {
+                    open = (findGapEndOfDay(allApptsForDate.get(i), closeWD));
+                    if (open != null) {
+                        open.forEach((ts) -> {
+                            allOpenTimes.add(ts);
+                        });
+                    }
+                } else if (allApptsForDate.get(i).getProfessional().getProfessionalID()
                         != allApptsForDate.get(i + 1).getProfessional().getProfessionalID()) {
-                    allOpenTimes.add(findGapEndOfDay(allApptsForDate.get(i), closeWD));
+                    open = (findGapEndOfDay(allApptsForDate.get(i), closeWD));
+                    if (open != null) {
+                        open.forEach((ts) -> {
+                            allOpenTimes.add(ts);
+                        });
+                    }
                     allOpenTimes.add(findGapStartOfDay(allApptsForDate.get(i + 1), openWD));
                 } else {
-                    allOpenTimes.add(findGap(allApptsForDate.get(i), allApptsForDate.get(i + 1)));
+                    open = findGap(allApptsForDate.get(i), allApptsForDate.get(i + 1));
+                    if (open != null) {
+                        open.forEach((ts) -> {
+                            allOpenTimes.add(ts);
+                        });
+                    }
                 }
             }
         }
+
         List<TimeSlot> cleaned = new ArrayList<>();
-        for (int i = 0; i < allOpenTimes.size(); i++) {
-            if (allOpenTimes.get(i) != null) {
-                cleaned.add(allOpenTimes.get(i));
+        for (int j = 0; j < allOpenTimes.size(); j++) {
+            if (allOpenTimes.get(j) != null) {
+                cleaned.add(allOpenTimes.get(j));
             }
         }
         //need to account for lunch
         return cleaned;
     }
-
     //checks if date lands on the weekend
+
     private boolean isWeekend(LocalDate date) {
         return !(date.getDayOfWeek().equals(DayOfWeek.MONDAY)
                 || date.getDayOfWeek().equals(DayOfWeek.TUESDAY)
@@ -183,9 +212,12 @@ public class AppointmentService implements AppointmentServiceInterface {
     then realized I could combine them by having the opening as a parameter. then realized it
     was stupid because I wasn't checking for end of day appointments....
     Me am smart.
+    
+    need to adjust for case 4. Need to return two Slots, not just one
+    adjust above to .addAll, and return a List from here
      */
-    private TimeSlot findGap(Appointment first, Appointment second) {
-
+    private List<TimeSlot> findGap(Appointment first, Appointment second) {
+        List<TimeSlot> slots = new ArrayList<>();
         TimeSlot opening = new TimeSlot();
 
         //checks first appointment in list that it is at opening time
@@ -193,24 +225,72 @@ public class AppointmentService implements AppointmentServiceInterface {
             opening.setStartTime(first.getEndTime());
             opening.setEndTime(second.getStartTime());
             opening.setProfessional(first.getProfessional());
-            return opening;
         } else {
             return null;
+        }
+        /*
+            1 - the time slot is exaclty lunch
+            2 - the appointment starts before lunch, ends at 13:00. Need to set end time to 12:30
+            3 - Start time is 12:30, end time goes past 13:00. Adjust start time to 13:00
+            4 - Start time is before lunch, end time is after lunch. Need to create two TimeSlots
+                Adjust first so End time is 12:30, adjust second so Start Time is 13:00
+            0 - Start time and end time are both before 12:30 or after 13:00, meaning no conflict
+         */
+        switch (conflictsWithLunch(opening)) {
+            case 0:
+                slots.add(opening);
+                return slots;
+            case 1:
+                return null;
+            case 2:
+                opening.setEndTime(LocalTime.of(12, 30));
+                slots.add(opening);
+                return slots;
+            case 3:
+                opening.setStartTime(LocalTime.of(13, 00));
+                slots.add(opening);
+                return slots;
+            case 4:
+                TimeSlot afterLunch = new TimeSlot(opening.getProfessional(), LocalTime.of(13, 00), opening.getEndTime());
+                opening.setEndTime(LocalTime.of(12, 30));
+                slots.add(opening);
+                slots.add(afterLunch);
+                return slots;
+            default:
+                return null;
         }
     }
 
     /*
     checks for open appointments at the end of the day
+    had to reformat this because it wasn't originally checking any times. It would
+    simply check the time without taking lunch into account
      */
-    private TimeSlot findGapEndOfDay(Appointment appt, LocalTime close) {
-        TimeSlot lastButLeast = new TimeSlot();
-        if (appt.getEndTime().compareTo(close) < 0) {
-            lastButLeast.setProfessional(appt.getProfessional());
-            lastButLeast.setEndTime(close);
-            lastButLeast.setStartTime(appt.getEndTime());
-            return lastButLeast;
-        } else {
-            return null;
+    private List<TimeSlot> findGapEndOfDay(Appointment appt, LocalTime close) {
+        TimeSlot lastButLeast = new TimeSlot(appt.getProfessional(), appt.getStartTime(), close);
+        List<TimeSlot> slots = new ArrayList<>();
+        switch (conflictsWithLunch(lastButLeast)) {
+            case 0:
+                slots.add(lastButLeast);
+                return slots;
+            case 1:
+                return null;
+            case 2:
+                lastButLeast.setEndTime(LocalTime.of(12, 30));
+                slots.add(lastButLeast);
+                return slots;
+            case 3:
+                lastButLeast.setStartTime(LocalTime.of(13, 00));
+                slots.add(lastButLeast);
+                return slots;
+            case 4:
+                TimeSlot afterLunch = new TimeSlot(lastButLeast.getProfessional(), LocalTime.of(13, 00), lastButLeast.getEndTime());
+                lastButLeast.setEndTime(LocalTime.of(12, 30));
+                slots.add(lastButLeast);
+                slots.add(afterLunch);
+                return slots;
+            default:
+                return null;
         }
     }
 
@@ -227,5 +307,40 @@ public class AppointmentService implements AppointmentServiceInterface {
         } else {
             return null;
         }
+    }
+
+    /*
+    1 - the time slot is exaclty lunch
+    2 - the appointment starts before lunch, ends at 13:00. Need to set end time to 12:30
+    3 - Start time is 12:30, end time goes past 13:00. Adjust start time to 13:00
+    4 - Start time is before lunch, end time is after lunch. Need to create two TimeSlots
+        Adjust first so End time is 12:30, adjust second so Start Time is 13:00
+    0 - Start time and end time are both before 12:30 or after 13:00, meaning no conflict
+     */
+    private static int conflictsWithLunch(TimeSlot opening) {
+        LocalTime startLunch = LocalTime.of(12, 30);
+        LocalTime endLunch = LocalTime.of(13, 00);
+
+        if ((opening.getStartTime().compareTo(startLunch) < 0
+                && opening.getEndTime().compareTo(startLunch) <= 0)
+                || (opening.getStartTime().compareTo(endLunch) >= 0
+                && opening.getEndTime().compareTo(endLunch) > 0)) {
+            return 0;
+        } else if (opening.getStartTime().compareTo(startLunch) == 0
+                && opening.getEndTime().compareTo(endLunch) == 0) {
+            return 1;
+        } else if (opening.getStartTime().compareTo(startLunch) < 0
+                && opening.getEndTime().compareTo(endLunch) == 0) {
+            return 2;
+        } else if (opening.getStartTime().compareTo(startLunch) == 0
+                && opening.getEndTime().compareTo(endLunch) > 0) {
+            return 3;
+        } else if (opening.getStartTime().compareTo(startLunch) < 0
+                && opening.getEndTime().compareTo(endLunch) > 0) {
+            return 4;
+        } else {
+            return 10;
+        }
+
     }
 }

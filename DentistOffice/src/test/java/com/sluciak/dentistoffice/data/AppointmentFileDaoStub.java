@@ -29,11 +29,11 @@ public class AppointmentFileDaoStub implements AppointmentDao {
         appts.add(new Appointment(2, "Stebbing", Professions.DENTIST, LocalTime.of(9, 30), LocalTime.of(10, 30), new BigDecimal("185.00")));
         appts.add(new Appointment(3, "Stebbing", Professions.DENTIST, LocalTime.of(10, 30), LocalTime.of(12, 30), new BigDecimal("370.00")));
 
-        appts.add(new Appointment(3, "Gergolet", Professions.HYGENIST, LocalTime.of(10, 00), LocalTime.of(10, 30), new BigDecimal("80.00")));
+        appts.add(new Appointment(3, "Gergolet", Professions.HYGIENIST, LocalTime.of(10, 00), LocalTime.of(10, 30), new BigDecimal("80.00")));
 
-        appts.add(new Appointment(4, "Lidstone", Professions.HYGENIST, LocalTime.of(9, 00), LocalTime.of(9, 30), new BigDecimal("40.00")));
-        appts.add(new Appointment(2, "Lidstone", Professions.HYGENIST, LocalTime.of(10, 30), LocalTime.of(11, 00), new BigDecimal("40.00")));
-        appts.add(new Appointment(6, "Lidstone", Professions.HYGENIST, LocalTime.of(11, 00), LocalTime.of(12, 00), new BigDecimal("80.00")));
+        appts.add(new Appointment(4, "Lidstone", Professions.HYGIENIST, LocalTime.of(9, 00), LocalTime.of(9, 30), new BigDecimal("40.00")));
+        appts.add(new Appointment(2, "Lidstone", Professions.HYGIENIST, LocalTime.of(10, 30), LocalTime.of(11, 00), new BigDecimal("40.00")));
+        appts.add(new Appointment(6, "Lidstone", Professions.HYGIENIST, LocalTime.of(11, 00), LocalTime.of(12, 00), new BigDecimal("80.00")));
 
         appts.add(new Appointment(5, "Bovingdon", Professions.ORTHODONTIST, LocalTime.of(8, 30), LocalTime.of(12, 00), new BigDecimal("875.00")));
 

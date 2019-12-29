@@ -1,4 +1,12 @@
 /*
+NOTES TO SELF:
+Remaining tasks
+ 1. Add complexity to searching for open appointments (i.e. lunch)
+ 2. Add time contraints according to profession for making a new appointment
+ 3. Add check that Appointment file exists, if not make one
+ 4. Figure out how to handle TimeSlots for a new date
+ */
+ /*
  * To change this license header, choose License Headers in Project Properties.
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
@@ -19,14 +27,13 @@ import java.time.LocalDate;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
-import java.util.Collection;
 import java.util.List;
 
 /**
  *
  * @author TomTom
  */
-public class Controller {
+public class Controller<T> {
 
     private final View view;
     private final AppointmentService apptService;
@@ -121,11 +128,11 @@ public class Controller {
         //possible to DRY this method up? used in most controller methods. Abstract method?
         //displays a menu for the user and returns their choice
         List<Patient> matches = personService.findPatientByLastName(patLastName);
-        for (int i = 0; i < matches.size(); i++) {
-            view.displayPatientInMenu(matches.get(i), i);
-        }
-        //gets user menu choice
-        int menuChoice = view.readChoiceOfOptions("Enter the number of the patient you would like to select.") - 1;
+
+        //replaced methods specific to object with general method for displaying 
+        //search results and getting user choice
+        int menuChoice = getMenuSelection(matches);
+
         Patient patient = matches.get(menuChoice);
 
         List<Appointment> appts = null;
@@ -147,90 +154,6 @@ public class Controller {
     }
 
     /*
-    User may choose from an existing Customer or add a new Customer ("Add a Customer" use case).
-    Enter a date.
-    Enter a Specialty.
-    Application shows available time slots for all Dental Professionals with that Specialty.
-    Choose a Dental Professional.
-    Enter a start and end time for the Appointment.
-    Review/confirm. If the user doesn't confirm, the Appointment must not be saved.
-    
-    NEEDS WORK. FACOTR INTO SEVERAL METHODS. THIS IS OOGLAY
-     */
-    public void scheduleNewAppointment() {
-        int menuChoice = 0;
-        Patient patient;
-        ErrorMessage woops = new ErrorMessage();
-        String patientLastName;
-        String answer = view.readYesNoPrompt("Is this appointment for an existing patient? "
-                + "\nEnter [y] to search, [n] to create a new patient");
-
-        if (answer.equalsIgnoreCase("n")) {
-            do {
-                patient = view.makePatient();
-                patientLastName = patient.getLastName();
-                view.displayPatient(patient);
-                answer = view.readYesNoPrompt("Is this information correct?");
-            } while (answer.equalsIgnoreCase("n"));
-            woops = personService.addNewPatient(patient);
-            if (woops.hasError()) {
-                view.displayErrorMessage(woops);
-                return;
-            }
-        } else {
-            patientLastName = view.enterLastName("What is the last name of the patient?");
-            List<Patient> patsLname = personService.findPatientByLastName(patientLastName);
-            menuChoice = view.displayAndGetChoicePatient(patsLname) - 1;
-            patient = patsLname.get(menuChoice);
-        }
-
-        //gets profession sought
-        Professions jorb;
-        do {
-            int pro = view.displayAndGetChoiceProfession();
-            jorb = Professions.fromValue(pro);
-            answer = view.readYesNoPrompt("You chose " + Professions.fromValue(pro) + ", is this correct?");
-        } while (answer.equalsIgnoreCase("n"));
-
-        //loop for entering date and seeing available appointments
-        List<TimeSlot> openings = null;
-        LocalDate dateOfChoice;
-        do {
-            dateOfChoice = getDateForAppt();
-            try {
-                openings = apptService.findOpenAppointments(dateOfChoice, jorb);
-            } catch (StorageException se) {
-                woops.addErrors(se.getMessage());
-            }
-            if (!woops.hasError()) {
-                view.printFormat(String.format("%s, %s.  %s | %s", "Name of professional", "Profession", "Start of opening", "End of opening"));
-                for (int i = 0; i < openings.size(); i++) {
-                    view.displayOpenAppointments(openings.get(i), i + 1);
-                }
-                menuChoice = view.readChoiceOfOptions("Enter the number of the appointment that works best: \nEnter -1 if you wish to search for a new date.");
-                if (menuChoice == -1) {
-                    answer = "n";
-                } else {
-                    view.printFormat("You chose " + menuChoice + "\n");
-                    view.displayOpenAppointments(openings.get(menuChoice - 1), menuChoice);
-                    answer = view.readYesNoPrompt("is this correct?");
-                }
-            } else {
-                view.displayErrorMessage(woops);
-                answer = "n";
-            }
-        } while (!answer.equalsIgnoreCase("y"));
-
-        if (addAppointment(dateOfChoice, openings.get(menuChoice), patient)) {
-            view.printSuccess("Appointment successfully added.");
-        } else {
-            woops.addErrors("There was an error adding the appointment. Please try again.");
-            view.displayErrorMessage(woops);
-        }
-
-    }
-
-    /*
     Enter a date.
     Choose a Customer.
     Choose an Appointment.
@@ -249,25 +172,24 @@ public class Controller {
         //takes in patient last name being searched for
         String patLastName = getLastNameForSearch("Enter the last name of the patient you are searching for: ");
 
+        //gets a list of patients with matching last names, then asks user to pick the right one
         List<Patient> matches = personService.findPatientByLastName(patLastName);
-        for (int i = 0; i < matches.size(); i++) {
-            view.displayPatientInMenu(matches.get(i), i);
-        }
-        //gets user menu choice
-        int menuChoice = view.readChoiceOfOptions("Enter the number of the patient you would like to select.") - 1;
+        int menuChoice = getMenuSelection(matches);
         Patient patient = matches.get(menuChoice);
 
+        //begins by finding all appointments for the provided date by pillaging the appointment dao
         List<Appointment> appts = null;
-        //go into the appointment dao and find the
         try {
             appts = apptService.findByDateAndPatient(date, patient.getPatientID());
         } catch (StorageException se) {
             oopsieDaisy.addErrors(se.getMessage());
             view.displayErrorMessage(oopsieDaisy);
         }
+
+        //initial check to make sure appointments were actually found
         if (appts != null && appts.size() > 0) {
             //display menu function
-            for(int i = 0; i < appts.size(); i++){
+            for (int i = 0; i < appts.size(); i++) {
                 view.displayAppointmentInMenu(appts.get(i), i);
             }
             menuChoice = view.readChoiceOfOptions("Enter the number of the appointment you would like to edit.") - 1;
@@ -275,9 +197,9 @@ public class Controller {
             edited = view.displayAndGetAppointmentInformation(edited);
 
             oopsieDaisy = apptService.updateAppointment(date, edited);
-            if(oopsieDaisy.hasError()){
+            if (oopsieDaisy.hasError()) {
                 view.displayErrorMessage(oopsieDaisy);
-            }else{
+            } else {
                 view.printSuccess("Appointment updated successfully!");
             }
 
@@ -328,11 +250,10 @@ public class Controller {
         String patLastName = getLastNameForSearch("Enter the last name of the patient you are searching for: ");
 
         List<Patient> matches = personService.findPatientByLastName(patLastName);
-        for (int i = 0; i < matches.size(); i++) {
-            view.displayPatientInMenu(matches.get(i), i);
-        }
+
+        int menuChoice = getMenuSelection(matches);
+
         //gets user menu choice
-        int menuChoice = view.readChoiceOfOptions("Enter the number of the patient whose appointment you are canceling.") - 1;
         Patient patient = matches.get(menuChoice);
 
         List<Appointment> appts = null;
@@ -345,16 +266,16 @@ public class Controller {
         }
         if (appts != null && appts.size() > 0) {
             //display menu function
-            for(int i = 0; i < appts.size(); i++){
+            for (int i = 0; i < appts.size(); i++) {
                 view.displayAppointmentInMenu(appts.get(i), i);
             }
             menuChoice = view.readChoiceOfOptions("Enter the number of the appointment being canceled.") - 1;
             Appointment cenceling = appts.get(menuChoice);
 
             yaDunGoofed = apptService.cancelAppointment(date, cenceling);
-            if(yaDunGoofed.hasError()){
+            if (yaDunGoofed.hasError()) {
                 view.displayErrorMessage(yaDunGoofed);
-            }else{
+            } else {
                 view.printSuccess("Appointment canceled successfully!");
             }
 
@@ -364,12 +285,50 @@ public class Controller {
         }
     }
 
-    
-    
-    /***********************
-    *Private Methods Below *
-    ************************/
-    
+    /**
+     * **********************
+     * Private Methods Below **********************
+     */
+    //method that asks user for the patient's last name
+    private Patient getPatientFromUser() {
+        String answer = "n";
+        String patientLastName;
+        ErrorMessage woops = new ErrorMessage();
+        Patient patient = new Patient();
+
+        if (answer.equalsIgnoreCase("n")) {
+            do {
+                patient = view.makePatient();
+                patientLastName = patient.getLastName();
+                view.displayPatient(patient);
+                answer = view.readYesNoPrompt("Is this information correct?");
+            } while (answer.equalsIgnoreCase("n"));
+            woops = personService.addNewPatient(patient);
+            if (woops.hasError()) {
+                view.displayErrorMessage(woops);
+                return new Patient();
+            }
+        } else {
+            patientLastName = view.enterLastName("What is the last name of the patient?");
+            List<Patient> patsLname = personService.findPatientByLastName(patientLastName);
+            int menuChoice = getMenuSelection(patsLname);
+            patient = patsLname.get(menuChoice);
+        }
+        return patient;
+    }
+
+    //method that asks user to choose a profession from the menu
+    private Professions getProfessionFromUser() {
+        Professions jorb;
+        String answer;
+        do {
+            int pro = view.displayAndGetChoiceProfession();
+            jorb = Professions.fromValue(pro);
+            answer = view.readYesNoPrompt("You chose " + Professions.fromValue(pro) + ", is this correct?");
+        } while (answer.equalsIgnoreCase("n"));
+        return jorb;
+    }
+
     private boolean isValidDate(String date) {
         LocalDate day = formatDate(date);
         return day != null;
@@ -403,23 +362,6 @@ public class Controller {
     private LocalDate getDateForAppt() {
         String date = view.enterDate("Enter the date the user wishes to schedule for:");
         return formatDate(date);
-    }
-
-    private boolean addAppointment(LocalDate date, TimeSlot openSlot, Patient patient) {
-        Duration leng = Duration.between(openSlot.getStartTime(), openSlot.getEndTime());
-        BigDecimal cost = openSlot.getProfessional().getHourlyRate();
-        BigDecimal length = new BigDecimal(leng.toHours());
-        cost = cost.multiply(length).setScale(2);
-        Appointment appt = new Appointment(
-                openSlot.getStartTime(),
-                openSlot.getEndTime(),
-                cost);
-        appt.setProfessional(openSlot.getProfessional());
-        appt.setPatient(patient);
-        String notes = view.getDoctorsNotes();
-        appt.setNotes(notes);
-        ErrorMessage uhoh = apptService.addAppointment(date, appt);
-        return uhoh.hasError();
     }
 
     private LocalDate getDateForSearch() {
@@ -475,5 +417,158 @@ public class Controller {
             Patient patient = objs.get(menuChoice);
         }
     }
+    
+    
+    As per Corbin's suggestion, changed from abstract to generic method. Much nicer
      */
+    public <T> int getMenuSelection(List<T> listy) {
+        return view.displayMenuAndReadChoiceOfOptions(listy);
+    }
+
+    /*
+    I had this big ugly monster of a method sitting in the middle of my code. Thought it looked better
+    here
+    
+    User may choose from an existing Customer or add a new Customer ("Add a Customer" use case).
+    Enter a date.
+    Enter a Specialty.
+    Application shows available time slots for all Dental Professionals with that Specialty.
+    Choose a Dental Professional.
+    Enter a start and end time for the Appointment.
+    Review/confirm. If the user doesn't confirm, the Appointment must not be saved.
+    
+    Factored into methods, but now having other issues
+        Need to fix grabbing user info and initial patient options (new or existing)
+        Run to make sure
+        Need to add options for creating a new appointment or choosing from open times
+        Adding for a new date will get...complicated. Need to map it out first
+     */
+    public void scheduleNewAppointment() {
+        int menuChoice = 0;
+        String answer;
+        Patient patient = new Patient();
+        ErrorMessage woops = new ErrorMessage();
+
+        //should run until a proper answer is given, being either y or n
+        do {
+            answer = view.readYesNoPrompt("Is this appointment for an existing patient? "
+                    + "\nEnter [y] to search, [n] to create a new patient");
+        } while (!answer.equalsIgnoreCase("y") && !answer.equalsIgnoreCase("n"));
+        if (answer.equalsIgnoreCase("n")) {
+            patient = createNewPatientForAppointment();
+        } else {
+            //bit of extra legwork here but ultimately retrieves desired patient from Dao
+            String patientLastName = getLastNameForSearch("Enter the last name of the user you are searching for: ");
+            List<Patient> matches = personService.findPatientByLastName(patientLastName);
+            menuChoice = getMenuSelection(matches);
+            patient = matches.get(menuChoice);
+        }
+        //gets profession sought
+        Professions jorb = getProfessionFromUser();
+        LocalDate dateOfChoice;
+        TimeSlot choiceOfOpenAppt = new TimeSlot();
+        List<TimeSlot> openings = null;
+        boolean keepRunning;
+
+        //loop for entering date and seeing available appointments
+        do {
+            keepRunning = true;
+            dateOfChoice = getDateForAppt();
+
+            //checks date to make sure there are appointments
+            try {
+                openings = apptService.findOpenAppointments(dateOfChoice, jorb);
+            } catch (StorageException se) {
+                woops.addErrors(se.getMessage());
+            }
+            try {
+                choiceOfOpenAppt = findAndDisplayOpenAppointments(openings, dateOfChoice);
+                keepRunning = false;
+            } catch (NullPointerException npe) {
+                view.printFormat("No open appointments on this date. Please try a new day.");
+            }
+        } while (keepRunning);
+
+        if (!addAppointment(dateOfChoice, openings.get(menuChoice), patient)) {
+            view.printSuccess("Appointment successfully added.");
+        } else {
+            woops.addErrors("There was an error adding the appointment. Please try again.");
+            view.displayErrorMessage(woops);
+        }
+
+    }
+
+    private Patient createNewPatientForAppointment() {
+        Patient pat = new Patient();
+        String ans;
+        ErrorMessage bungled = new ErrorMessage();
+        do {
+            pat = view.makePatient();
+            String bDay = view.enterBirthdate();
+            if (isValidDate(bDay)) {
+                pat.setBirthday(formatDate(bDay));
+            }
+            view.displayPatient(pat);
+            ans = view.readYesNoPrompt("Is this information correct?");
+            bungled = personService.addNewPatient(pat);
+        } while (!ans.equalsIgnoreCase("y"));
+
+        if (bungled.hasError()) {
+            view.displayErrorMessage(bungled);
+            return null;
+        } else {
+            view.printSuccess(pat.getFirstName() + " added!");
+            return pat;
+        }
+    }
+
+    private TimeSlot findAndDisplayOpenAppointments(List<TimeSlot> openings, LocalDate dateOfChoice) {
+
+        int menuChoice = 0;
+        String answer;
+        ErrorMessage goshDarnit = new ErrorMessage();
+
+        //need to do something to check out whether or not
+        //the date file exists. From there can prompt user for inputting an entirely
+        //new appointment for a new date
+        //this is not working. need to retool
+        view.printFormat(String.format("%s, %s.  %s | %s", "Name of professional", "Profession", "Start of opening", "End of opening"));
+        for (int i = 0; i < openings.size(); i++) {
+            view.displayOpenAppointments(openings.get(i), i + 1);
+        }
+        menuChoice = view.readChoiceOfOptions("Enter the number of the appointment that works best: \nEnter -1 if you wish to search for a new date.");
+        if (menuChoice == -1) {
+            return null;
+        } else {
+            view.printFormat("You chose " + menuChoice + "\n");
+            view.displayOpenAppointments(openings.get(menuChoice - 1), menuChoice);
+            answer = view.readYesNoPrompt("is this correct?");
+            return openings.get(menuChoice - 1);
+        }
+    }
+
+    private boolean addAppointment(LocalDate date, TimeSlot openSlot, Patient patient) {
+        BigDecimal totalCost = calculateTotalCostOfAppt(openSlot, openSlot.getProfessional().getHourlyRate());
+
+        Appointment appt = new Appointment(
+                openSlot.getStartTime(),
+                openSlot.getEndTime(),
+                totalCost);
+        appt.setProfessional(openSlot.getProfessional());
+        appt.setPatient(patient);
+        String notes = view.getDoctorsNotes();
+        appt.setNotes(notes);
+        ErrorMessage uhoh = apptService.addAppointment(date, appt);
+        return uhoh.hasError();
+    }
+    
+    private BigDecimal calculateTotalCostOfAppt(TimeSlot slot, BigDecimal hourlyRate){
+        Duration amtTime = Duration.between(slot.getStartTime(), slot.getEndTime());
+        long totalMins = amtTime.toMinutes();
+        BigDecimal totalCost = BigDecimal.valueOf(totalMins).multiply(hourlyRate);
+        totalCost = totalCost.divide(new BigDecimal("60")).setScale(2);
+        //switch(totalMins)
+        
+        return totalCost;
+    }
 }

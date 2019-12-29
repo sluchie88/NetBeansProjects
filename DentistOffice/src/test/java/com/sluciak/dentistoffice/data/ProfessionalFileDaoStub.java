@@ -23,8 +23,8 @@ public class ProfessionalFileDaoStub implements ProfessionalDao {
     public ProfessionalFileDaoStub() {
 
         profs.add(new Professional(1, "Sunshine", "Stebbing", Professions.DENTIST, new BigDecimal("185.00")));
-        profs.add(new Professional(2, "Merline", "Lidstone", Professions.HYGENIST, new BigDecimal("80.00")));
-        profs.add(new Professional(3, "Floyd", "Gergolet", Professions.HYGENIST, new BigDecimal("80.00")));
+        profs.add(new Professional(2, "Merline", "Lidstone", Professions.HYGIENIST, new BigDecimal("80.00")));
+        profs.add(new Professional(3, "Floyd", "Gergolet", Professions.HYGIENIST, new BigDecimal("80.00")));
         profs.add(new Professional(4, "Henryetta", "Bovingdon", Professions.ORTHODONTIST, new BigDecimal("250.00")));
         profs.add(new Professional(5, "Bibby", "Woodfield", Professions.ORAL_SURGEON, new BigDecimal("325.00")));
     }
