@@ -27,9 +27,9 @@ public class PatientFileDao
     @Override
     public List<Patient> findAll() throws StorageException {
         List<Patient> patients = readObject(this::mapToPatient).stream().collect(Collectors.toList());
-        if(!patients.isEmpty()){
+        if (!patients.isEmpty()) {
             return patients;
-        }else{
+        } else {
             throw new StorageException("No patients have that birthday");
         }
     }
@@ -40,11 +40,14 @@ public class PatientFileDao
     }
 
     @Override
+    //should be able to search with just a portion of a last name now...
     public List<Patient> findByLastName(String lName) throws StorageException {
+        lName = lName.substring(0, 1).toUpperCase() + lName.substring(1, (lName.length()));
+        
         List<Patient> allPats = findAll();
         List<Patient> foundPats = new ArrayList<>();
         for (Patient p : allPats) {
-            if (p.getLastName().equals(lName)) {
+            if (p.getLastName().contains(lName)) {
                 foundPats.add(p);
             }
         }

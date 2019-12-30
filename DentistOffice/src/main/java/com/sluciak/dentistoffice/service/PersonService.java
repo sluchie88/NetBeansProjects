@@ -8,9 +8,9 @@ package com.sluciak.dentistoffice.service;
 import com.sluciak.dentistoffice.data.PatientDao;
 import com.sluciak.dentistoffice.data.ProfessionalDao;
 import com.sluciak.dentistoffice.data.StorageException;
-import com.sluciak.dentistoffice.models.Appointment;
 import com.sluciak.dentistoffice.models.Patient;
 import com.sluciak.dentistoffice.models.Professional;
+import com.sluciak.dentistoffice.models.Professions;
 import java.util.List;
 
 /**
@@ -116,5 +116,14 @@ public class PersonService implements PersonServiceInterface {
             }
         }
         return dunderhead;
+    }
+
+    public List<Professional> findByProfession(Professions profession) throws StorageException{
+        List<Professional> allProfs = proDao.findByProfession(profession);
+        if(allProfs != null && !allProfs.isEmpty()){
+            return allProfs;
+        }else{
+            throw new StorageException("Unable to locate any staff of that profession.");
+        }        
     }
 }

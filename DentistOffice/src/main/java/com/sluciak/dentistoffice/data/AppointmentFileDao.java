@@ -9,7 +9,6 @@ import com.sluciak.dentistoffice.models.Appointment;
 import com.sluciak.dentistoffice.models.Patient;
 import com.sluciak.dentistoffice.models.Professions;
 import com.sluciak.dentistoffice.models.Professional;
-import com.sluciak.dentistoffice.service.Validation;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalTime;
@@ -57,9 +56,7 @@ public class AppointmentFileDao extends FileDao<Appointment> implements Appointm
         for (Appointment apt : forDate) {
             if (apt.getProfessional().getProfessionalID() == pro.getProfessionalID()) {
                 found = true;
-
             }
-
         }
         if (found) {
             return forDate.stream()
@@ -85,7 +82,6 @@ public class AppointmentFileDao extends FileDao<Appointment> implements Appointm
     public List<Appointment> findByDateAndPatient(LocalDate date, int id) throws StorageException {
         List<Appointment> forDate = findByDate(date);
         boolean found = false;
-
         for (Appointment apt : forDate) {
             if (apt.getPatient().getPatientID() == id) {
                 found = true;

@@ -16,6 +16,7 @@ package com.sluciak.dentistoffice.view;
 import com.sluciak.dentistoffice.data.StorageException;
 import com.sluciak.dentistoffice.models.Appointment;
 import com.sluciak.dentistoffice.models.Patient;
+import com.sluciak.dentistoffice.models.Professional;
 import com.sluciak.dentistoffice.models.Professions;
 import com.sluciak.dentistoffice.service.AppointmentService;
 import com.sluciak.dentistoffice.service.ErrorMessage;
@@ -123,7 +124,7 @@ public class Controller<T> {
         LocalDate date = getDateForSearch();
 
         //takes in patient last name being searched for
-        String patLastName = getLastNameForSearch("Enter the last name of the patient you are searching for: ");
+        String patLastName = getLastNameForSearch("Enter at least the first 3 letter of the last name of the patient you are searching for: ");
 
         //possible to DRY this method up? used in most controller methods. Abstract method?
         //displays a menu for the user and returns their choice
@@ -141,15 +142,14 @@ public class Controller<T> {
             appts = apptService.findByDateAndPatient(date, patient.getPatientID());
         } catch (StorageException se) {
             ohNo.addErrors(se.getMessage());
-            view.displayErrorMessage(ohNo);
         }
-        if (appts.size() > 0) {
+        if (!ohNo.hasError()) {
             view.displayMessage(patient.getFirstName() + " " + patient.getLastName() + "'s appointment details:");
             for (int i = 0; i < appts.size(); i++) {
                 view.displayAppointment(appts.get(i));
             }
         } else {
-            view.displayMessage("There are no appointments for " + patient.getFirstName() + " " + patient.getLastName() + " on this date.");
+            view.displayErrorMessage(ohNo);
         }
     }
 
@@ -440,6 +440,16 @@ public class Controller<T> {
         }
         //gets profession sought
         Professions jorb = getProfessionFromUser();
+        
+        /*
+        need to check times for all professionals, even if they don't exist in
+        the appointment file. this is the list of all, but not sure how to use it
+        */
+        try{
+            List<Professional> allProfs = personService.findByProfession(jorb);
+        }catch(StorageException se){
+            woops.addErrors(se.getMessage());
+        }
         LocalDate dateOfChoice;
         TimeSlot choiceOfOpenAppt = new TimeSlot();
         List<TimeSlot> openings = null;
