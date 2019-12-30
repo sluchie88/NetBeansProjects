@@ -31,10 +31,15 @@ public class AppointmentService implements AppointmentServiceInterface {
     @Override
     public ErrorMessage addAppointment(LocalDate date, Appointment apptN) {
         ErrorMessage chumbawumba = new ErrorMessage();
-        try{
-            apptDao.addAppointment(date, apptN);
-        } catch(StorageException se){
-            chumbawumba.addErrors(se.getMessage());
+
+        if (Validation.appointmentIsOkay(date, apptN)) {
+            try {
+                apptDao.addAppointment(date, apptN);
+            } catch (StorageException se) {
+                chumbawumba.addErrors(se.getMessage());
+            }
+        }else{
+            chumbawumba.addErrors("Something went wrong. Please make sure the appointment is during normal business hours and the appropriate length.");
         }
         return chumbawumba;
     }
@@ -92,14 +97,6 @@ public class AppointmentService implements AppointmentServiceInterface {
     Monday-Friday: 7:30AM-12:30PM, then 1:00PM-6:00PM
     Saturday: 8:30AM-12:30PM
     Scheduling
-
-    NEVER allow an Appointment outside of business hours.
-    DENTIST: min Appointment is 15 minutes, max 3 hours
-    HYGIENIST: min 30 minutes, max 2 hours
-    ORTHODONTIST: min 15 minutes, max 1 hour
-    ORAL_SURGEON: min 30 minutes, max 8 hours (may schedule over lunch if Appointment > 5 hours)
-    Only one Appointment per Customer, per Specialty, per day. (A Customer could see a HYGIENIST 
-    in the morning and a DENTIST in the afternoon, but never two DENTISTs in a single day.)
     
     It is absolutely essential to prevent Dental Professionals from being double-booked.
      */

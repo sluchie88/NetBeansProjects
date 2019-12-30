@@ -8,6 +8,7 @@ package com.sluciak.dentistoffice.service;
 import com.sluciak.dentistoffice.models.Appointment;
 import com.sluciak.dentistoffice.models.Professions;
 import java.time.DayOfWeek;
+import java.time.Duration;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
@@ -72,6 +73,81 @@ public class Validation {
         }
 
         return exists;
+    }
+
+    /*
+    NEVER allow an Appointment outside of business hours.
+    DENTIST: min Appointment is 15 minutes, max 3 hours
+    HYGIENIST: min 30 minutes, max 2 hours
+    ORTHODONTIST: min 15 minutes, max 1 hour
+    ORAL_SURGEON: min 30 minutes, max 8 hours (may schedule over lunch if Appointment > 5 hours)
+    Only one Appointment per Customer, per Specialty, per day. (A Customer could see a HYGIENIST 
+    in the morning and a DENTIST in the afternoon, but never two DENTISTs in a single day.)
+    
+    Business Hours
+    Monday-Friday: 7:30AM-12:30PM, then 1:00PM-6:00PM
+    Saturday: 8:30AM-12:30PM
+    Scheduling
+    
+    It is absolutely essential to prevent Dental Professionals from being double-booked.
+    
+    
+    Created this method to make sure a newly added appointment is valid for both length 
+    of appointment and when it starts/ends
+     */
+    public static boolean appointmentIsOkay(LocalDate date, Appointment apptN) {
+        Duration lengthOfAppt = Duration.between(apptN.getStartTime(), apptN.getEndTime());
+        long lengthInMinutes = lengthOfAppt.toMinutes();
+        
+        if (date.getDayOfWeek() == DayOfWeek.SATURDAY) {
+            if (null == apptN.getProfessional().getSpecialty()) {
+                return (lengthInMinutes >= 30 && lengthInMinutes <= 240)
+                        && (apptN.getStartTime().compareTo(LocalTime.of(8, 30)) >= 0
+                        && apptN.getEndTime().compareTo(LocalTime.of(12, 30)) <= 0);
+            } else switch (apptN.getProfessional().getSpecialty()) {
+                case DENTIST:
+                    return (lengthInMinutes >= 15 && lengthInMinutes <= 180)
+                            && (apptN.getStartTime().compareTo(LocalTime.of(8, 30)) >= 0
+                            && apptN.getEndTime().compareTo(LocalTime.of(12, 30)) <= 0);
+                case HYGIENIST:
+                    return (lengthInMinutes >= 30 && lengthInMinutes <= 120)
+                            && (apptN.getStartTime().compareTo(LocalTime.of(8, 30)) >= 0
+                            && apptN.getEndTime().compareTo(LocalTime.of(12, 30)) <= 0);
+                case ORTHODONTIST:
+                    return (lengthInMinutes >= 15 && lengthInMinutes <= 60)
+                            && (apptN.getStartTime().compareTo(LocalTime.of(8, 30)) >= 0
+                            && apptN.getEndTime().compareTo(LocalTime.of(12, 30)) <= 0);
+                default:
+                    return (lengthInMinutes >= 30 && lengthInMinutes <= 240)
+                            && (apptN.getStartTime().compareTo(LocalTime.of(8, 30)) >= 0
+                            && apptN.getEndTime().compareTo(LocalTime.of(12, 30)) <= 0);
+            }
+        } else if (date.getDayOfWeek() != DayOfWeek.SUNDAY) {
+            if (null == apptN.getProfessional().getSpecialty()) {
+                return (lengthInMinutes >= 30 && lengthInMinutes <= 480)
+                        && (apptN.getStartTime().compareTo(LocalTime.of(7, 30)) >= 0
+                        && apptN.getEndTime().compareTo(LocalTime.of(18, 00)) <= 0);
+            } else switch (apptN.getProfessional().getSpecialty()) {
+                case DENTIST:
+                    return (lengthInMinutes >= 15 && lengthInMinutes <= 180)
+                            && (apptN.getStartTime().compareTo(LocalTime.of(7, 30)) >= 0
+                            && apptN.getEndTime().compareTo(LocalTime.of(18, 00)) <= 0);
+                case HYGIENIST:
+                    return (lengthInMinutes >= 30 && lengthInMinutes <= 120)
+                            && (apptN.getStartTime().compareTo(LocalTime.of(7, 30)) >= 0
+                            && apptN.getEndTime().compareTo(LocalTime.of(18, 00)) <= 0);
+                case ORTHODONTIST:
+                    return (lengthInMinutes >= 15 && lengthInMinutes <= 60)
+                            && (apptN.getStartTime().compareTo(LocalTime.of(7, 30)) >= 0
+                            && apptN.getEndTime().compareTo(LocalTime.of(18, 00)) <= 0);
+                default:
+                    return (lengthInMinutes >= 30 && lengthInMinutes <= 480)
+                            && (apptN.getStartTime().compareTo(LocalTime.of(7, 30)) >= 0
+                            && apptN.getEndTime().compareTo(LocalTime.of(18, 00)) <= 0);
+            }
+        } else {
+            return false;
+        }
     }
 
 }

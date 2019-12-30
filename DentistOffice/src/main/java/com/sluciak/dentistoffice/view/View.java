@@ -115,6 +115,11 @@ public class View<T> {
         printHeader("Enter a time");
         return aiyo.readString("Enter a time in 24 hour format, using HH:mm");
     }
+    
+    public String readStartEndTime(String prompt){
+        printHeader(prompt);
+        return aiyo.readString("Enter a time in 24 hour format, using HH:mm");
+    }
 
     public void goodbye() {
         printHeader("Goodbye!");
@@ -182,11 +187,11 @@ public class View<T> {
     }
 
     public int displayAndGetChoiceProfession() {
-        aiyo.print("0. " + Professions.DENTIST.toString());
-        aiyo.print("1. " + Professions.ORTHODONTIST.toString());
-        aiyo.print("2. " + Professions.HYGIENIST.toString());
-        aiyo.print("3. " + Professions.ORAL_SURGEON.toString());
-        return aiyo.readInt("Enter [1-4] for which type of professional the patient would like to see.");
+        aiyo.print("1. " + Professions.DENTIST.toString());
+        aiyo.print("2. " + Professions.ORTHODONTIST.toString());
+        aiyo.print("3. " + Professions.HYGIENIST.toString());
+        aiyo.print("4. " + Professions.ORAL_SURGEON.toString());
+        return (aiyo.readInt("Enter [1-4] for which type of professional the patient would like to see.") - 1);
     }
 
     public String getDoctorsNotes() {

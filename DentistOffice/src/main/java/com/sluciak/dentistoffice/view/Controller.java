@@ -286,8 +286,8 @@ public class Controller<T> {
     }
 
     /**
-     * **********************
-     * Private Methods Below **********************
+     * ***********************
+     * Private Methods Below * ***********************
      */
     //method that asks user for the patient's last name
     private Patient getPatientFromUser() {
@@ -401,31 +401,6 @@ public class Controller<T> {
     }
 
     /*
-    Idea is to create an abstract method that will display items from any type of list and 
-    allow the user to select from them. Issue is passing to the view since
-    patient has different fields than a professional than an appointment than
-    a timeslot. Need to investigate, not imperative that this works
-    
-    public abstract class MenuDisplay<T> {
-
-        public int getMenuSelection(List<T> objs) {
-            for (int i = 0; i < objs.size(); i++) {
-                view.displayObject(objs.get(i), i);
-            }
-            //gets user menu choice
-            int menuChoice = view.readChoiceOfOptions("Enter the number of the patient you would like to select.") - 1;
-            Patient patient = objs.get(menuChoice);
-        }
-    }
-    
-    
-    As per Corbin's suggestion, changed from abstract to generic method. Much nicer
-     */
-    public <T> int getMenuSelection(List<T> listy) {
-        return view.displayMenuAndReadChoiceOfOptions(listy);
-    }
-
-    /*
     I had this big ugly monster of a method sitting in the middle of my code. Thought it looked better
     here
     
@@ -489,7 +464,7 @@ public class Controller<T> {
             }
         } while (keepRunning);
 
-        if (!addAppointment(dateOfChoice, openings.get(menuChoice), patient)) {
+        if (!addAppointmentToFile(dateOfChoice, choiceOfOpenAppt, patient)) {
             view.printSuccess("Appointment successfully added.");
         } else {
             woops.addErrors("There was an error adding the appointment. Please try again.");
@@ -524,7 +499,7 @@ public class Controller<T> {
 
     private TimeSlot findAndDisplayOpenAppointments(List<TimeSlot> openings, LocalDate dateOfChoice) {
 
-        int menuChoice = 0;
+        int menuChoice;
         String answer;
         ErrorMessage goshDarnit = new ErrorMessage();
 
@@ -547,28 +522,129 @@ public class Controller<T> {
         }
     }
 
-    private boolean addAppointment(LocalDate date, TimeSlot openSlot, Patient patient) {
-        BigDecimal totalCost = calculateTotalCostOfAppt(openSlot, openSlot.getProfessional().getHourlyRate());
+    private boolean addAppointmentToFile(LocalDate date, TimeSlot openSlot, Patient patient) {
+        LocalTime startTime;
+        LocalTime endTime;
+        Appointment appt = new Appointment();
 
-        Appointment appt = new Appointment(
-                openSlot.getStartTime(),
-                openSlot.getEndTime(),
-                totalCost);
+        if (openSlot.getProfessional().getSpecialty() != Professions.ORAL_SURGEON) {
+            startTime = getStartTimeNotOralSurg(openSlot);
+            endTime = getEndTimeNotOralSurg(openSlot);
+        } else {
+            startTime = getStartTimeOralSurg(openSlot);
+            endTime = getEndTimeOralSurg(openSlot);
+        }
+        appt.setStartTime(startTime);
+        appt.setEndTime(endTime);
+        
+        String notes = view.getDoctorsNotes();
+        BigDecimal totalCost = calculateTotalCostOfAppt(appt, openSlot.getProfessional().getHourlyRate());
+
         appt.setProfessional(openSlot.getProfessional());
         appt.setPatient(patient);
-        String notes = view.getDoctorsNotes();
+        
+        appt.setTotalCost(totalCost);
         appt.setNotes(notes);
+
         ErrorMessage uhoh = apptService.addAppointment(date, appt);
         return uhoh.hasError();
     }
+
+    /*
+    Was having issues with this method. For whatever reason declaring total cost separately
+    as the hourly rate, then doing the multiplication stopped it from being 0. Not sure why
     
-    private BigDecimal calculateTotalCostOfAppt(TimeSlot slot, BigDecimal hourlyRate){
-        Duration amtTime = Duration.between(slot.getStartTime(), slot.getEndTime());
+    This method calculates the total cost for an appointment after getting the start
+    and end times.
+     */
+    private BigDecimal calculateTotalCostOfAppt(Appointment appt, BigDecimal hourlyRate) {
+        Duration amtTime = Duration.between(appt.getStartTime(), appt.getEndTime());
         long totalMins = amtTime.toMinutes();
         BigDecimal totalCost = BigDecimal.valueOf(totalMins).multiply(hourlyRate);
         totalCost = totalCost.divide(new BigDecimal("60")).setScale(2);
         //switch(totalMins)
-        
+
         return totalCost;
+    }
+
+    /*
+    factored out methods for getting times from user. Made separate methods for Oral
+    Surgeons because the checks on the time for start/end are different due to lunch
+     */
+    private LocalTime getStartTimeNotOralSurg(TimeSlot opening) {
+        LocalTime startTime = null;
+        String timeEntry;
+        do {
+            timeEntry = view.readStartEndTime("Start Time");
+            if (isValidTime(timeEntry)) {
+                startTime = formatTime(timeEntry);
+            }
+
+        } while (startTime == null || startTime.isBefore(opening.getStartTime()));
+        return startTime;
+    }
+
+    private LocalTime getEndTimeNotOralSurg(TimeSlot opening) {
+        LocalTime endTime = null;
+        String timeEntry;
+        do {
+            timeEntry = view.readStartEndTime("End Time");
+            if (isValidTime(timeEntry)) {
+                endTime = formatTime(timeEntry);
+            }
+
+        } while (endTime == null || endTime.isAfter(opening.getEndTime()));
+        return endTime;
+    }
+
+    private LocalTime getStartTimeOralSurg(TimeSlot opening) {
+        LocalTime startTime = null;
+        String timeEntry;
+        do {
+            timeEntry = view.readStartEndTime("Start Time");
+            if (isValidTime(timeEntry)) {
+                startTime = formatTime(timeEntry);
+            }
+
+        } while (startTime == null);
+        return startTime;
+    }
+
+    private LocalTime getEndTimeOralSurg(TimeSlot opening) {
+        LocalTime endTime = null;
+        String timeEntry;
+        do {
+            timeEntry = view.readStartEndTime("=== End Time ===");
+            if (isValidTime(timeEntry)) {
+                endTime = formatTime(timeEntry);
+            }
+
+        } while (endTime == null);
+        return endTime;
+    }
+
+    /*
+    Idea is to create an abstract method that will display items from any type of list and 
+    allow the user to select from them. Issue is passing to the view since
+    patient has different fields than a professional than an appointment than
+    a timeslot. Need to investigate, not imperative that this works
+    
+    public abstract class MenuDisplay<T> {
+
+        public int getMenuSelection(List<T> objs) {
+            for (int i = 0; i < objs.size(); i++) {
+                view.displayObject(objs.get(i), i);
+            }
+            //gets user menu choice
+            int menuChoice = view.readChoiceOfOptions("Enter the number of the patient you would like to select.") - 1;
+            Patient patient = objs.get(menuChoice);
+        }
+    }
+    
+    
+    As per Corbin's suggestion, changed from abstract to generic method. Much nicer
+     */
+    public <T> int getMenuSelection(List<T> listy) {
+        return view.displayMenuAndReadChoiceOfOptions(listy);
     }
 }
