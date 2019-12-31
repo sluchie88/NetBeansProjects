@@ -9,7 +9,11 @@ import com.sluciak.dentistoffice.models.Appointment;
 import com.sluciak.dentistoffice.models.Patient;
 import com.sluciak.dentistoffice.models.Professions;
 import com.sluciak.dentistoffice.models.Professional;
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.math.BigDecimal;
+import java.nio.file.Files;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
@@ -43,6 +47,18 @@ public class AppointmentFileDao extends FileDao<Appointment> implements Appointm
         date.format(DateTimeFormatter.ofPattern("yyyyddMM"));
         String dateStr = date.toString().replaceAll("-", "");
         String apptFilePath = "appointments_" + dateStr + ".txt";
+
+        try {
+            File file = new File(apptFilePath);
+            if (!file.exists()) {
+                FileWriter writer = new FileWriter(file);
+                writer.write("customer_id,dental_pro_lastname,specialty,start_time,end_time,total_cost,notes");
+                writer.flush();
+                writer.close();
+            }
+        } catch (IOException ex) {
+        }
+
         super.setPath(apptFilePath);
 
         return readObject(this::mapToAppointment).stream().collect(Collectors.toList());
@@ -69,12 +85,9 @@ public class AppointmentFileDao extends FileDao<Appointment> implements Appointm
 
     @Override
     public List<Appointment> findByProfession(LocalDate date, Professions job) throws StorageException {
-        date.format(DateTimeFormatter.ofPattern("yyyyddMM"));
-        String dateStr = date.toString().replaceAll("-", "");
-        String apptFilePath = "appointments_" + dateStr + ".txt";
-        super.setPath(apptFilePath);
+        List<Appointment> forDate = findByDate(date);
 
-        return readObject(this::mapToAppointment).stream()
+        return forDate.stream()
                 .filter(p -> p.getProfessional().getSpecialty().equals(job)).collect(Collectors.toList());
     }
 

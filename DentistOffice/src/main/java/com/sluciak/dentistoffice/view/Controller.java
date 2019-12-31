@@ -23,6 +23,7 @@ import com.sluciak.dentistoffice.service.ErrorMessage;
 import com.sluciak.dentistoffice.service.TimeSlot;
 import com.sluciak.dentistoffice.service.PersonService;
 import java.math.BigDecimal;
+import java.time.DayOfWeek;
 import java.time.Duration;
 import java.time.LocalDate;
 import java.time.LocalTime;
@@ -440,14 +441,15 @@ public class Controller<T> {
         }
         //gets profession sought
         Professions jorb = getProfessionFromUser();
-        
+
         /*
         need to check times for all professionals, even if they don't exist in
         the appointment file. this is the list of all, but not sure how to use it
-        */
-        try{
-            List<Professional> allProfs = personService.findByProfession(jorb);
-        }catch(StorageException se){
+         */
+        List<Professional> allProfs = null;
+        try {
+            allProfs = personService.findByProfession(jorb);
+        } catch (StorageException se) {
             woops.addErrors(se.getMessage());
         }
         LocalDate dateOfChoice;
@@ -459,6 +461,7 @@ public class Controller<T> {
         do {
             keepRunning = true;
             dateOfChoice = getDateForAppt();
+            boolean weekend = dateOfChoice.getDayOfWeek().equals(DayOfWeek.SATURDAY);
 
             //checks date to make sure there are appointments
             try {
@@ -466,9 +469,14 @@ public class Controller<T> {
             } catch (StorageException se) {
                 woops.addErrors(se.getMessage());
             }
+
+            openings = personService.addMissingProfessionals(openings, allProfs, weekend);
+
             try {
                 choiceOfOpenAppt = findAndDisplayOpenAppointments(openings, dateOfChoice);
-                keepRunning = false;
+                if (choiceOfOpenAppt != null) {
+                    keepRunning = false;
+                }
             } catch (NullPointerException npe) {
                 view.printFormat("No open appointments on this date. Please try a new day.");
             }
@@ -546,13 +554,13 @@ public class Controller<T> {
         }
         appt.setStartTime(startTime);
         appt.setEndTime(endTime);
-        
+
         String notes = view.getDoctorsNotes();
         BigDecimal totalCost = calculateTotalCostOfAppt(appt, openSlot.getProfessional().getHourlyRate());
 
         appt.setProfessional(openSlot.getProfessional());
         appt.setPatient(patient);
-        
+
         appt.setTotalCost(totalCost);
         appt.setNotes(notes);
 

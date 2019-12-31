@@ -12,15 +12,13 @@ import java.time.Duration;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
-import java.time.format.DateTimeFormatter;
-import java.time.format.DateTimeParseException;
 import java.util.List;
 
 /**
  *
  * @author TomTom
  */
-public class Validation {
+public class Validation<T> {
 
     public static boolean isNullOrWhiteSpace(String something) {
         return something == null || something.trim().length() == 0;
@@ -150,4 +148,7 @@ public class Validation {
         }
     }
 
+    static <T> boolean isEmptyList(List<T> listy) {
+        return (listy == null || listy.size() <= 0);
+    }
 }

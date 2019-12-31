@@ -11,6 +11,8 @@ import com.sluciak.dentistoffice.data.StorageException;
 import com.sluciak.dentistoffice.models.Patient;
 import com.sluciak.dentistoffice.models.Professional;
 import com.sluciak.dentistoffice.models.Professions;
+import java.time.LocalTime;
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -118,12 +120,54 @@ public class PersonService implements PersonServiceInterface {
         return dunderhead;
     }
 
-    public List<Professional> findByProfession(Professions profession) throws StorageException{
+    public List<Professional> findByProfession(Professions profession) throws StorageException {
         List<Professional> allProfs = proDao.findByProfession(profession);
-        if(allProfs != null && !allProfs.isEmpty()){
+        if (allProfs != null && !allProfs.isEmpty()) {
             return allProfs;
-        }else{
+        } else {
             throw new StorageException("Unable to locate any staff of that profession.");
-        }        
+        }
+    }
+
+    /*
+    takes in the list of all found openings and checks if there are any professionals not listed
+    If any professionals don't have appointments yet, they will be added as open all day
+     */
+    public List<TimeSlot> addMissingProfessionals(List<TimeSlot> openings, List<Professional> allProfs, boolean weekend) {
+        if (!Validation.isEmptyList(openings)) {
+            for (Professional p : allProfs) {
+                boolean found = false;
+                for (TimeSlot ts : openings) {
+                    if (ts.getProfessional().getLastName().equals(p.getLastName())) {
+                        found = true;
+                        break;
+                    }
+                }
+                if (!found) {
+                    if (weekend) {
+                        openings.add(new TimeSlot(p, LocalTime.of(8, 30), LocalTime.of(12, 30)));
+                    } else {
+                        openings.add(new TimeSlot(p, LocalTime.of(7, 30), LocalTime.of(12, 30)));
+                        openings.add(new TimeSlot(p, LocalTime.of(13, 00), LocalTime.of(18, 00)));
+                    }
+                }
+            }
+            return openings;
+        } else {
+            openings = new ArrayList<>(); 
+            for (Professional p : allProfs) {
+                if (weekend) {
+                    openings.add(new TimeSlot(p, LocalTime.of(8, 30), LocalTime.of(12, 30)));
+                } else {
+                    openings.add(new TimeSlot(p, LocalTime.of(7, 30), LocalTime.of(12, 30)));
+                    openings.add(new TimeSlot(p, LocalTime.of(13, 00), LocalTime.of(18, 00)));
+                }
+            }
+            return openings;
+        }
     }
 }
+
+/*
+
+ */
