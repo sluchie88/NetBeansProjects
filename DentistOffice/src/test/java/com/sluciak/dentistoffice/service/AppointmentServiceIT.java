@@ -94,8 +94,10 @@ public class AppointmentServiceIT {
     public void testCancelAppointment() {
         Appointment appt2 = new Appointment(3, "Gergolet", Professions.HYGIENIST, LocalTime.of(10, 00), LocalTime.of(10, 30), new BigDecimal("80.00"), "needs to start flossing");
 
-//        assertTrue(apptService.cancelAppointment(LocalDate.of(2019, 12, 30), appt2));
-//        assertFalse(apptService.cancelAppointment(LocalDate.of(2019, 12, 30), appt2));
+        ErrorMessage try1 = apptService.cancelAppointment(LocalDate.of(2019, 12, 30), appt2);
+        assertTrue(try1.hasError());
+        try1 = apptService.cancelAppointment(LocalDate.of(2019, 12, 30), appt2);
+        assertFalse(try1.hasError());
 
         apptService.addAppointment(LocalDate.of(2019, 12, 30), appt2);
     }

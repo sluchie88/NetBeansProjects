@@ -141,6 +141,7 @@ public class AppointmentFileDao implements AppointmentDao {
     @Override
     public boolean cancelAppointment(LocalDate date, Appointment toCancel) throws StorageException {
         List<Appointment> allAppts = findByDate(date);
+        boolean found = false;
         int index = -1;
         //originally used indexof but kept returning -1. something with how the old and new appts were
         //getting set in the view. couldn't find a way to fix that so this was my next best solution
@@ -151,6 +152,7 @@ public class AppointmentFileDao implements AppointmentDao {
                     && curr.getStartTime().compareTo(toCancel.getStartTime()) == 0
                     && curr.getEndTime().compareTo(toCancel.getEndTime()) == 0) {
                 index = i;
+                found = true;
                 break;
             }
         }
@@ -164,7 +166,7 @@ public class AppointmentFileDao implements AppointmentDao {
         } else {
             throw new StorageException("Unable to locate specified appointment. Please try again later.");
         }
-        return allAppts.contains(toCancel);
+        return !allAppts.contains(toCancel);
     }
 
     /*

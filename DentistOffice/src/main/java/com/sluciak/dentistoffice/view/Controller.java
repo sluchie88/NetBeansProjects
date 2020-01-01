@@ -22,6 +22,7 @@ import com.sluciak.dentistoffice.service.AppointmentService;
 import com.sluciak.dentistoffice.service.ErrorMessage;
 import com.sluciak.dentistoffice.service.TimeSlot;
 import com.sluciak.dentistoffice.service.PersonService;
+import com.sluciak.dentistoffice.service.Validation;
 import java.math.BigDecimal;
 import java.time.DayOfWeek;
 import java.time.Duration;
@@ -462,8 +463,12 @@ public class Controller<T> {
         do {
             keepRunning = true;
             dateOfChoice = getDateForSearch();
-            boolean weekend = dateOfChoice.getDayOfWeek().equals(DayOfWeek.SATURDAY);
-
+            while(dateOfChoice.getDayOfWeek() == DayOfWeek.SUNDAY){
+                woops.addErrors("We are closed on Sundays, please pick another day.");
+                view.displayErrorMessage(woops);
+                woops.deleteErrors(woops);
+                dateOfChoice = getDateForSearch();
+            }
             //checks date to make sure there are appointments
             try {
                 openings = apptService.findOpenAppointments(dateOfChoice, jorb);
@@ -471,7 +476,7 @@ public class Controller<T> {
                 woops.addErrors(se.getMessage());
             }
 
-            openings = personService.addMissingProfessionals(openings, allProfs, weekend);
+            openings = personService.addMissingProfessionals(openings, allProfs, Validation.isOnWeekend(dateOfChoice));
 
             try {
                 choiceOfOpenAppt = findAndDisplayOpenAppointments(openings, dateOfChoice);

@@ -47,11 +47,31 @@ public class Validation<T> {
         }
     }
 
-    public static boolean isAnOkayLengthAppointment(Appointment appt, Professions prof) {
-        boolean itsOkay = false;
-
-        //fill in the guttyworks
-        return itsOkay;
+    /*
+    NEVER allow an Appointment outside of business hours.
+    DENTIST: min Appointment is 15 minutes, max 3 hours
+    HYGIENIST: min 30 minutes, max 2 hours
+    ORTHODONTIST: min 15 minutes, max 1 hour
+    ORAL_SURGEON: min 30 minutes, max 8 hours (may schedule over lunch if Appointment > 5 hours)
+    Only one Appointment per Customer, per Specialty, per day. (A Customer could see a HYGIENIST 
+    in the morning and a DENTIST in the afternoon, but never two DENTISTs in a single day.)
+    */
+    public boolean isAnOkayLengthAppointment(Appointment appt, Professions prof) {
+        Duration amtTime = Duration.between(appt.getStartTime(), appt.getEndTime());
+        long totalMins = amtTime.toMinutes();
+        
+        switch(prof){
+            case DENTIST:
+                return totalMins >= 15 && totalMins <= 180;
+            case HYGIENIST:
+                return totalMins >= 30 && totalMins <= 120;
+            case ORTHODONTIST:
+                return totalMins >= 15 && totalMins <= 60;
+            case ORAL_SURGEON:
+                return totalMins >= 30 && totalMins <= 480;
+            default:
+                return false;
+        }
     }
 
     /*
@@ -148,7 +168,15 @@ public class Validation<T> {
         }
     }
 
-    static <T> boolean isEmptyList(List<T> listy) {
+    public static <T> boolean isEmptyList(List<T> listy) {
         return (listy == null || listy.size() <= 0);
+    }
+
+    public static boolean isOnWeekend(LocalDate date) {
+        return !(date.getDayOfWeek().equals(DayOfWeek.MONDAY)
+                || date.getDayOfWeek().equals(DayOfWeek.TUESDAY)
+                || date.getDayOfWeek().equals(DayOfWeek.WEDNESDAY)
+                || date.getDayOfWeek().equals(DayOfWeek.THURSDAY)
+                || date.getDayOfWeek().equals(DayOfWeek.FRIDAY));
     }
 }

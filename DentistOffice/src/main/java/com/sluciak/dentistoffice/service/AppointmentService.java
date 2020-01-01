@@ -79,11 +79,11 @@ public class AppointmentService implements AppointmentServiceInterface {
     public ErrorMessage cancelAppointment(LocalDate date, Appointment toCancel) {
         ErrorMessage effinACotton = new ErrorMessage();
         try {
-            //returns true of unable to remove appointment, false if removed successfully
-            if (!apptDao.cancelAppointment(date, toCancel)) {
-
+            //returns true of able to remove appointment, false if remove unsuccessful
+            if (apptDao.cancelAppointment(date, toCancel)) {
+                
             } else {
-                effinACotton.addErrors("Blahblahblah");
+                effinACotton.addErrors("Appointment could not be canceled because it does not exist.");
             }
         } catch (StorageException se) {
             effinACotton.addErrors(se.getMessage());
