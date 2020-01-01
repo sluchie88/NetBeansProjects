@@ -5,29 +5,38 @@
  */
 package com.sluciak.dentistoffice.data;
 
+import static com.sluciak.dentistoffice.data.PatientFileDao.HEADER;
 import com.sluciak.dentistoffice.models.Appointment;
 import com.sluciak.dentistoffice.models.Patient;
 import com.sluciak.dentistoffice.models.Professions;
 import com.sluciak.dentistoffice.models.Professional;
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.PrintWriter;
 import java.math.BigDecimal;
 import java.nio.file.Files;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Scanner;
 import java.util.stream.Collectors;
 
 /**
  *
  * @author TomTom
  */
-public class AppointmentFileDao extends FileDao<Appointment> implements AppointmentDao {
+public class AppointmentFileDao implements AppointmentDao {
+
+    public static final String DELIMETER = ",";
+    public static final String HEADER = "customer_id,dental_pro_lastname,specialty,start_time,end_time,total_cost,notes";
 
     public AppointmentFileDao() {
-        super("", 7, true);
     }
 
     @Override
@@ -36,7 +45,7 @@ public class AppointmentFileDao extends FileDao<Appointment> implements Appointm
         if (!allAppts.contains(appt)) {
             allAppts.add(appt);
             allAppts.sort((a, b) -> a.getProfessional().getLastName().compareTo(b.getProfessional().getLastName()));
-            writeObject(allAppts, this::mapToString);
+            writeAppointments(allAppts, makeIntoFilePath(date));
             return appt;
         } else {
             throw new StorageException("This appointment already exists.");
@@ -44,24 +53,8 @@ public class AppointmentFileDao extends FileDao<Appointment> implements Appointm
     }
 
     public List<Appointment> findByDate(LocalDate date) throws StorageException {
-        date.format(DateTimeFormatter.ofPattern("yyyyddMM"));
-        String dateStr = date.toString().replaceAll("-", "");
-        String apptFilePath = "appointments_" + dateStr + ".txt";
-
-        try {
-            File file = new File(apptFilePath);
-            if (!file.exists()) {
-                FileWriter writer = new FileWriter(file);
-                writer.write("customer_id,dental_pro_lastname,specialty,start_time,end_time,total_cost,notes");
-                writer.flush();
-                writer.close();
-            }
-        } catch (IOException ex) {
-        }
-
-        super.setPath(apptFilePath);
-
-        return readObject(this::mapToAppointment).stream().collect(Collectors.toList());
+        String path = makeIntoFilePath(date);
+        return readFile(path).stream().collect(Collectors.toList());
     }
 
     @Override
@@ -76,10 +69,10 @@ public class AppointmentFileDao extends FileDao<Appointment> implements Appointm
         }
         if (found) {
             return forDate.stream()
-                    .filter(a -> a.getProfessional().getLastName().equals(lastName))
+                    .filter(a -> a.getProfessional().getLastName().contains(lastName))
                     .collect(Collectors.toList());
         } else {
-            throw new StorageException("Professional does not exist.");
+            throw new StorageException("No matching professionals found");
         }
     }
 
@@ -133,7 +126,7 @@ public class AppointmentFileDao extends FileDao<Appointment> implements Appointm
             allAppts.remove(index);
             allAppts.add(index, newInfo);
             try {
-                writeObject(allAppts, this::mapToString);
+                writeAppointments(allAppts, makeIntoFilePath(date));
             } catch (StorageException se) {
                 throw new StorageException("Unable to save changes to database");
             }
@@ -167,7 +160,7 @@ public class AppointmentFileDao extends FileDao<Appointment> implements Appointm
         if (index >= 0) {
             allAppts.remove(index);
             try {
-                writeObject(allAppts, this::mapToString);
+                writeAppointments(allAppts, makeIntoFilePath(date));
             } catch (StorageException se) {
                 throw new StorageException("Unable to save changes to the database.");
             }
@@ -185,7 +178,9 @@ public class AppointmentFileDao extends FileDao<Appointment> implements Appointm
     
     may need to account for blank notes. may make program explode
      */
-    private Appointment mapToAppointment(String[] tokens) {
+    private Appointment mapToAppointment(String intake) {
+        String[] tokens = intake.split(DELIMETER);
+
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("HH:mm");
 
         int id = Integer.parseInt(tokens[0]);
@@ -231,4 +226,55 @@ public class AppointmentFileDao extends FileDao<Appointment> implements Appointm
         }
     }
 
+    /*
+    refactor to stop using the fileDao class, and write methods to specifically
+    read/write/append for these classes
+     */
+    private List<Appointment> readFile(String path) throws StorageException {
+        List<Appointment> apptList = new ArrayList<>();
+        Scanner scanny;
+        try {
+            File file = new File(path);
+            if (!file.exists()) {
+                FileWriter writer = new FileWriter(file);
+                writer.write("customer_id,dental_pro_lastname,specialty,start_time,end_time,total_cost,notes");
+                writer.flush();
+                writer.close();
+            }
+        } catch (IOException ex) {
+        }
+        try {
+            scanny = new Scanner(new BufferedReader(new FileReader(path)));
+        } catch (FileNotFoundException fnfe) {
+            throw new StorageException("File not found.");
+        }
+        //should skip the header
+        String currLine = scanny.nextLine();
+        Appointment currAppt;
+        while (scanny.hasNextLine()) {
+            currLine = scanny.nextLine();
+            currAppt = mapToAppointment(currLine);
+            apptList.add(currAppt);
+        }
+        scanny.close();
+        return apptList;
+    }
+
+    private void writeAppointments(List<Appointment> listy, String path) throws StorageException {
+        try (PrintWriter rowling = new PrintWriter(new FileWriter(path))) {
+            rowling.println(HEADER);
+            for (Appointment a : listy) {
+                rowling.println(mapToString(a));
+            }
+        } catch (IOException ioe) {
+            throw new StorageException("Write to file unsuccessful.");
+        }
+    }
+
+    private String makeIntoFilePath(LocalDate date) {
+        date.format(DateTimeFormatter.ofPattern("yyyyddMM"));
+        String dateStr = date.toString().replaceAll("-", "");
+        String apptFilePath = "appointments_" + dateStr + ".txt";
+        return apptFilePath;
+    }
 }

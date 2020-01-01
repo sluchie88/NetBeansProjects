@@ -82,7 +82,7 @@ public class Controller<T> {
      */
     public void displayApptsByDateAndDoctor() {
         String ans;
-        String profLastName = getLastNameForSearch("Enter the last name of the staff member you are searching for: ");
+        String profLastName = getLastNameForSearch("Enter at least the first 3 letter of the last name of the staff member you are searching for: ");
         ErrorMessage britta = new ErrorMessage();
         //private method that gets and verifies the date the user wishes to search for
         LocalDate date = getDateForSearch();
