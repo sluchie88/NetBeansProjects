@@ -82,7 +82,7 @@ public class Controller<T> {
      */
     public void displayApptsByDateAndDoctor() {
         String ans;
-        String profLastName = getLastNameForSearch("Enter at least the first 3 letter of the last name of the staff member you are searching for: ");
+        String profLastName = getLastNameForSearch("Enter at least the last name of the staff member you are searching for: ");
         ErrorMessage britta = new ErrorMessage();
         //private method that gets and verifies the date the user wishes to search for
         LocalDate date = getDateForSearch();
@@ -171,7 +171,7 @@ public class Controller<T> {
         LocalDate date = getDateForSearch();
 
         //takes in patient last name being searched for
-        String patLastName = getLastNameForSearch("Enter the last name of the patient you are searching for: ");
+        String patLastName = getLastNameForSearch("Enter at least the first 3 letter of the last name of the patient you are searching for: ");
 
         //gets a list of patients with matching last names, then asks user to pick the right one
         List<Patient> matches = personService.findPatientByLastName(patLastName);
@@ -248,7 +248,7 @@ public class Controller<T> {
         LocalDate date = getDateForSearch();
 
         //takes in patient last name being searched for
-        String patLastName = getLastNameForSearch("Enter the last name of the patient you are searching for: ");
+        String patLastName = getLastNameForSearch("Enter at least the first 3 letter of the last name of the patient you are searching for: ");
 
         List<Patient> matches = personService.findPatientByLastName(patLastName);
 
@@ -288,7 +288,8 @@ public class Controller<T> {
 
     /**
      * ***********************
-     * Private Methods Below * ***********************
+     * Private Methods Below *
+     * ***********************
      */
     //method that asks user for the patient's last name
     private Patient getPatientFromUser() {
@@ -434,7 +435,7 @@ public class Controller<T> {
             patient = createNewPatientForAppointment();
         } else {
             //bit of extra legwork here but ultimately retrieves desired patient from Dao
-            String patientLastName = getLastNameForSearch("Enter the last name of the user you are searching for: ");
+            String patientLastName = getLastNameForSearch("Enter at least the first 3 letter of the last name of the patient you are searching for: ");
             List<Patient> matches = personService.findPatientByLastName(patientLastName);
             menuChoice = getMenuSelection(matches);
             patient = matches.get(menuChoice);
@@ -460,7 +461,7 @@ public class Controller<T> {
         //loop for entering date and seeing available appointments
         do {
             keepRunning = true;
-            dateOfChoice = getDateForAppt();
+            dateOfChoice = getDateForSearch();
             boolean weekend = dateOfChoice.getDayOfWeek().equals(DayOfWeek.SATURDAY);
 
             //checks date to make sure there are appointments

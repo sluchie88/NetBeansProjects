@@ -113,12 +113,12 @@ public class View<T> {
 
     public String readTime() {
         printHeader("Enter a time");
-        return aiyo.readString("Enter a time in 24 hour format, using HH:mm");
+        return aiyo.readString("Enter a time in 24 hour format, using HH:mm\nIf an a.m. appointment, use a leading 0 (i.e. 07:30, not 7:30).");
     }
     
     public String readStartEndTime(String prompt){
         printHeader(prompt);
-        return aiyo.readString("Enter a time in 24 hour format, using HH:mm");
+        return aiyo.readString("Enter a time in 24 hour format, using HH:mm\nIf an a.m. appointment, use a leading 0 (i.e. 07:30, not 7:30).");
     }
 
     public void goodbye() {
@@ -157,11 +157,11 @@ public class View<T> {
         int min = 1;
         int max = 1;
         for (int i = 0; i < patList.size(); i++) {
-            System.out.print(i + 1 + ". ");
+            System.out.print("[" + (i + 1) + "} ");
             displayPatient(patList.get(i));
             max++;
         }
-        return aiyo.readInt("Enter the number of the paitent you would like to choose [" + min + "-" + max + "]");
+        return aiyo.readInt("Enter the number of the patient you would like to choose [" + min + "-" + max + "]");
     }
 
     public int displayAndGetChoiceProfessional(List<Professional> proList) {
@@ -172,7 +172,7 @@ public class View<T> {
             displayProfessional(proList.get(i));
             max++;
         }
-        return aiyo.readInt("Enter the number of the paitent you would like to choose [" + min + "-" + max + "]");
+        return aiyo.readInt("Enter the number of the patient you would like to choose [" + min + "-" + max + "]");
     }
 
     public int displayAndGetChoiceAppointment(List<Appointment> apptList) {
@@ -183,14 +183,14 @@ public class View<T> {
             displayAppointment(apptList.get(i));
             max++;
         }
-        return aiyo.readInt("Enter the number of the paitent you would like to choose [" + min + "-" + max + "]");
+        return aiyo.readInt("Enter the number of the patient you would like to choose [" + min + "-" + max + "]");
     }
 
     public int displayAndGetChoiceProfession() {
-        aiyo.print("1. " + Professions.DENTIST.toString());
-        aiyo.print("2. " + Professions.ORTHODONTIST.toString());
-        aiyo.print("3. " + Professions.HYGIENIST.toString());
-        aiyo.print("4. " + Professions.ORAL_SURGEON.toString());
+        aiyo.print("[1] " + Professions.DENTIST.toString());
+        aiyo.print("[2] " + Professions.ORTHODONTIST.toString());
+        aiyo.print("[3] " + Professions.HYGIENIST.toString());
+        aiyo.print("[4] " + Professions.ORAL_SURGEON.toString());
         return (aiyo.readInt("Enter [1-4] for which type of professional the patient would like to see.") - 1);
     }
 
@@ -254,6 +254,6 @@ public class View<T> {
         for(int i = 0; i < listy.size(); i++){
             aiyo.print("[" + (i + 1) + "] " + listy.get(i).toString());
         }
-        return ((aiyo.readInt("Enter the number of the option you want above: ")) - 1);
+        return ((aiyo.readInt("Enter the number of the desired option from above: ")) - 1);
     }
 }

@@ -38,7 +38,7 @@ public class AppointmentService implements AppointmentServiceInterface {
             } catch (StorageException se) {
                 chumbawumba.addErrors(se.getMessage());
             }
-        }else{
+        } else {
             chumbawumba.addErrors("Something went wrong. Please make sure the appointment is during normal business hours and the appropriate length.");
         }
         return chumbawumba;
@@ -135,6 +135,18 @@ public class AppointmentService implements AppointmentServiceInterface {
                             allOpenTimes.add(ts);
                         });
                     } else if (allApptsForDate.get(i).getProfessional().getProfessionalID()
+                            != allApptsForDate.get(i + 1).getProfessional().getProfessionalID()
+                            && allApptsForDate.get(i).getProfessional().getProfessionalID()
+                            != allApptsForDate.get(i - 1).getProfessional().getProfessionalID()) {
+
+                        open = getTimeSlotsIsolatedAppt(allApptsForDate.get(i), openWE, closeWE, isWeekend(dateOfChoice));
+                        if (open != null) {
+                        open.forEach((ts) -> {
+                            allOpenTimes.add(ts);
+                        });
+                    }
+
+                    } else if (allApptsForDate.get(i).getProfessional().getProfessionalID()
                             != allApptsForDate.get(i + 1).getProfessional().getProfessionalID()) {
                         open = (findGapEndOfDay(allApptsForDate.get(i), closeWE));
                         if (open != null) {
@@ -164,6 +176,19 @@ public class AppointmentService implements AppointmentServiceInterface {
                             allOpenTimes.add(ts);
                         });
                     }
+                    //not reading in isolated appointments correctly for some reason
+                } else if (allApptsForDate.get(i).getProfessional().getProfessionalID()
+                        != allApptsForDate.get(i + 1).getProfessional().getProfessionalID()
+                        && allApptsForDate.get(i).getProfessional().getProfessionalID()
+                        != allApptsForDate.get(i - 1).getProfessional().getProfessionalID()) {
+
+                    open = getTimeSlotsIsolatedAppt(allApptsForDate.get(i), openWD, closeWD, isWeekend(dateOfChoice));
+                    if (open != null) {
+                        open.forEach((ts) -> {
+                            allOpenTimes.add(ts);
+                        });
+                    }
+
                 } else if (allApptsForDate.get(i).getProfessional().getProfessionalID()
                         != allApptsForDate.get(i + 1).getProfessional().getProfessionalID()) {
                     open = (findGapEndOfDay(allApptsForDate.get(i), closeWD));
@@ -338,6 +363,54 @@ public class AppointmentService implements AppointmentServiceInterface {
         } else {
             return 10;
         }
+    }
 
+    /*
+    made this method because finding time slots above was not working for finding
+    openings around appointments for doctors who just had one appointment for the day
+    
+    This will find all possible openings
+    */
+    private List<TimeSlot> getTimeSlotsIsolatedAppt(Appointment appt, LocalTime start, LocalTime close, boolean weekend) {
+        LocalTime lunchStart = null;
+        LocalTime lunchEnd = null;
+        List<TimeSlot> openings = null;
+        boolean morningAppt = appt.getStartTime().compareTo(LocalTime.of(12, 00)) < 0;
+        
+        if(!weekend){
+            lunchStart = LocalTime.of(12, 30);
+            lunchEnd = LocalTime.of(13, 00);
+        }
+        //comparisons for a morning appointment
+        if(morningAppt){
+            if(appt.getStartTime().compareTo(start) > 0){
+                openings.add(new TimeSlot(appt.getProfessional(), start, appt.getStartTime()));
+            }
+            if(appt.getEndTime().compareTo(lunchStart) < 0){
+                openings.add(new TimeSlot(appt.getProfessional(), appt.getEndTime(), lunchStart));
+                if(!weekend){
+                    openings.add(new TimeSlot(appt.getProfessional(), lunchEnd, close));
+                }
+                return openings;
+            }
+            if(appt.getEndTime().compareTo(lunchEnd) > 0 
+                    && appt.getEndTime().compareTo(close) < 0){
+                openings.add(new TimeSlot(appt.getProfessional(), appt.getEndTime(), close));
+                return openings;
+            }
+        }
+        //comparisons for an afternoon appointment
+        else{
+            openings.add(new TimeSlot(appt.getProfessional(), start, lunchStart));
+            if(appt.getStartTime().compareTo(lunchEnd) > 0){
+                openings.add(new TimeSlot(appt.getProfessional(), lunchEnd, appt.getStartTime()));
+            }
+            if(appt.getEndTime().compareTo(close) < 0){
+                openings.add(new TimeSlot(appt.getProfessional(), appt.getEndTime(), close));
+                return openings;
+            }
+        }
+        
+        return openings;
     }
 }

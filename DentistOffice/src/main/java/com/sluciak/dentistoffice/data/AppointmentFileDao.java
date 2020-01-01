@@ -104,9 +104,6 @@ public class AppointmentFileDao implements AppointmentDao {
     }
 
     @Override
-    /*
-    went out of bounds, unsure why
-     */
     public Appointment updateAppointment(LocalDate date, Appointment newInfo) throws StorageException {
         List<Appointment> allAppts = findByDate(date);
         int index = -1;

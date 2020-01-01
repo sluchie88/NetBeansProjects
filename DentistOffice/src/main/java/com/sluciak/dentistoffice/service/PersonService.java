@@ -60,7 +60,7 @@ public class PersonService implements PersonServiceInterface {
         Outcome<Professional> mistake = new Outcome<>();
         try {
             if (proDao.findByLastName(lName) == null) {
-                mistake.addErrors(lName + " does not exist in this system");
+                mistake.addErrors(lName + " is not a staff member at this clinic.");
             }
         } catch (StorageException se) {
             mistake.addErrors(se.getMessage());
@@ -137,6 +137,8 @@ public class PersonService implements PersonServiceInterface {
         if (!Validation.isEmptyList(openings)) {
             for (Professional p : allProfs) {
                 boolean found = false;
+                TimeSlot morning = new TimeSlot(null, LocalTime.of(7, 30), LocalTime.of(12, 30));
+                TimeSlot postnoon = new TimeSlot(null, LocalTime.of(13, 00), LocalTime.of(18, 00));
                 for (TimeSlot ts : openings) {
                     if (ts.getProfessional().getLastName().equals(p.getLastName())) {
                         found = true;
@@ -145,10 +147,15 @@ public class PersonService implements PersonServiceInterface {
                 }
                 if (!found) {
                     if (weekend) {
-                        openings.add(new TimeSlot(p, LocalTime.of(8, 30), LocalTime.of(12, 30)));
+                        morning.setStartTime(LocalTime.of(8, 30));
+                        morning.setEndTime(LocalTime.of(12, 30));
+                        morning.setProfessional(p);
+                        openings.add(morning);
                     } else {
-                        openings.add(new TimeSlot(p, LocalTime.of(7, 30), LocalTime.of(12, 30)));
-                        openings.add(new TimeSlot(p, LocalTime.of(13, 00), LocalTime.of(18, 00)));
+                        morning.setProfessional(p);
+                        postnoon.setProfessional(p);
+                        openings.add(morning);
+                        openings.add(postnoon);
                     }
                 }
             }
