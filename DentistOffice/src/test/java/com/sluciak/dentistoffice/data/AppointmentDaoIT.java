@@ -7,6 +7,7 @@ package com.sluciak.dentistoffice.data;
 
 import com.sluciak.dentistoffice.models.Appointment;
 import com.sluciak.dentistoffice.models.Patient;
+import com.sluciak.dentistoffice.models.Professional;
 import com.sluciak.dentistoffice.models.Professions;
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -46,6 +47,11 @@ public class AppointmentDaoIT {
     public void tearDown() {
     }
 
+    Professional pro1 = new Professional(1, "Berny", "Buzek", Professions.DENTIST, new BigDecimal("175.00"));
+    Professional pro2 = new Professional(2, "Reade", "O'Dunneen", Professions.DENTIST, new BigDecimal("175.00"));
+    Patient pat1 = new Patient(60, "Carl", "Simeon", LocalDate.of(2006, 03, 17));
+    Patient pat2 = new Patient(61, "Ines", "Chadwick", LocalDate.of(1967, 8, 21));
+
     /**
      * Test of findByProfessionalAndDate method, of class AppointmentDao.
      */
@@ -56,7 +62,7 @@ public class AppointmentDaoIT {
             dao.findByProfessionalAndDate(LocalDate.of(2019, Month.DECEMBER, 28), "Sluciak");
             fail();
         } catch (StorageException se) {
-            assertTrue(se.getMessage().equals("Professional does not exist."));
+            assertTrue(se.getMessage().equals("No professionals with that last name work here"));
         }
     }
 
@@ -65,7 +71,7 @@ public class AppointmentDaoIT {
      */
     @Test
     public void testFindByProfession() throws Exception {
-        assertTrue(dao.findByProfession(LocalDate.of(2019, Month.DECEMBER, 30), Professions.DENTIST).size() == 15);
+        assertTrue(dao.findByProfession(LocalDate.of(2019, Month.DECEMBER, 30), Professions.DENTIST).size() > 1);
         assertFalse(dao.findByProfession(LocalDate.of(2019, Month.DECEMBER, 30), Professions.ORAL_SURGEON).isEmpty());
     }
 
@@ -80,8 +86,8 @@ public class AppointmentDaoIT {
         try {
             assertNull(dao.findByDateAndPatient(LocalDate.of(2019, Month.DECEMBER, 30), nice.getPatientID()).isEmpty());
             fail();
-        } catch (Exception se) {
-            assertTrue(se.getMessage().equals("Patient does not exist."));
+        } catch (StorageException se) {
+            assertTrue(se.getMessage().equals("Patient has no appointment on this day."));
         }
     }
 
@@ -106,8 +112,8 @@ public class AppointmentDaoIT {
      */
     @Test
     public void testCancelAppointment() {
-        Appointment apptA = new Appointment(725, "Dearn", Professions.DENTIST, LocalTime.of(11, 15), LocalTime.of(12, 30), new BigDecimal("250.00"));
-        Appointment apptC = new Appointment(5000, "O'Dweed", Professions.DENTIST, LocalTime.of(17, 30), LocalTime.of(18, 00), new BigDecimal("43.75"), "check fangs");
+        Appointment apptA = new Appointment(pat1, pro1, LocalTime.of(11, 15), LocalTime.of(12, 30), new BigDecimal("250.00"), "");
+        Appointment apptC = new Appointment(pat1, pro1, LocalTime.of(11, 15), LocalTime.of(12, 30), new BigDecimal("43.75"), "check fangs");
         try {
             assertTrue(dao.cancelAppointment(LocalDate.of(2019, Month.DECEMBER, 30), apptA));
             assertFalse(dao.cancelAppointment(LocalDate.of(2019, Month.DECEMBER, 30), apptC));
@@ -118,8 +124,8 @@ public class AppointmentDaoIT {
 
     @Test
     public void testAddAppointment() {
-        Appointment apptA = new Appointment(725, "Dearn", Professions.DENTIST, LocalTime.of(11, 15), LocalTime.of(12, 30), new BigDecimal("250.00"));
-        Appointment apptC = new Appointment(5000, "O'Dweed", Professions.DENTIST, LocalTime.of(17, 30), LocalTime.of(18, 00), new BigDecimal("43.75"), "check fangs");
+        Appointment apptA = new Appointment(pat1, pro1, LocalTime.of(11, 15), LocalTime.of(12, 30), new BigDecimal("250.00"), "");
+        Appointment apptC = new Appointment(pat1, pro1, LocalTime.of(11, 15), LocalTime.of(12, 30), new BigDecimal("43.75"), "check fangs");
         try {
             assertNotNull(dao.addAppointment(LocalDate.of(2019, Month.DECEMBER, 30), apptA));
             assertNull(dao.addAppointment(LocalDate.of(2019, Month.DECEMBER, 30), apptC));

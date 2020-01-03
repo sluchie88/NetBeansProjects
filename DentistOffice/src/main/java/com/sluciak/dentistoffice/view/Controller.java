@@ -125,12 +125,14 @@ public class Controller<T> {
         //private method that gets and verifies the date the user wishes to search for
         LocalDate date = getDateForSearch();
 
-        //takes in patient last name being searched for
-        String patLastName = getLastNameForSearch("Enter at least the first 3 letter of the last name of the patient you are searching for: ");
+        List<Patient> matches;
+        do {//takes in patient last name being searched for
+            String patLastName = getLastNameForSearch("Enter at least the first 3 letter of the last name of the patient you are searching for: ");
 
-        //possible to DRY this method up? used in most controller methods. Abstract method?
-        //displays a menu for the user and returns their choice
-        List<Patient> matches = personService.findPatientByLastName(patLastName);
+            //possible to DRY this method up? used in most controller methods. Abstract method?
+            //displays a menu for the user and returns their choice
+            matches = personService.findPatientByLastName(patLastName);
+        } while (matches == null);
 
         //replaced methods specific to object with general method for displaying 
         //search results and getting user choice
@@ -139,7 +141,7 @@ public class Controller<T> {
         Patient patient = matches.get(menuChoice);
 
         List<Appointment> appts = null;
-        //go into the appointment dao and find the
+        //go into the appointment dao and find the p
         try {
             appts = apptService.findByDateAndPatient(date, patient.getPatientID());
         } catch (StorageException se) {
@@ -171,11 +173,14 @@ public class Controller<T> {
         //private method that gets and verifies the date the user wishes to search for
         LocalDate date = getDateForSearch();
 
-        //takes in patient last name being searched for
-        String patLastName = getLastNameForSearch("Enter at least the first 3 letter of the last name of the patient you are searching for: ");
+        List<Patient> matches;
+        do {
+            //takes in patient last name being searched for
+            String patLastName = getLastNameForSearch("Enter at least the first 3 letter of the last name of the patient you are searching for: ");
 
-        //gets a list of patients with matching last names, then asks user to pick the right one
-        List<Patient> matches = personService.findPatientByLastName(patLastName);
+            //gets a list of patients with matching last names, then asks user to pick the right one
+            matches = personService.findPatientByLastName(patLastName);
+        } while (matches == null);
         int menuChoice = getMenuSelection(matches);
         Patient patient = matches.get(menuChoice);
 
@@ -248,10 +253,13 @@ public class Controller<T> {
         //private method that gets and verifies the date the user wishes to search for
         LocalDate date = getDateForSearch();
 
-        //takes in patient last name being searched for
-        String patLastName = getLastNameForSearch("Enter at least the first 3 letter of the last name of the patient you are searching for: ");
+        List<Patient> matches;
+        do {
+            //takes in patient last name being searched for
+            String patLastName = getLastNameForSearch("Enter at least the first 3 letter of the last name of the patient you are searching for: ");
 
-        List<Patient> matches = personService.findPatientByLastName(patLastName);
+            matches = personService.findPatientByLastName(patLastName);
+        } while (matches == null);
 
         int menuChoice = getMenuSelection(matches);
 
@@ -289,37 +297,8 @@ public class Controller<T> {
 
     /**
      * ***********************
-     * Private Methods Below *
-     * ***********************
+     * Private Methods Below * ***********************
      */
-    //method that asks user for the patient's last name
-    private Patient getPatientFromUser() {
-        String answer = "n";
-        String patientLastName;
-        ErrorMessage woops = new ErrorMessage();
-        Patient patient = new Patient();
-
-        if (answer.equalsIgnoreCase("n")) {
-            do {
-                patient = view.makePatient();
-                patientLastName = patient.getLastName();
-                view.displayPatient(patient);
-                answer = view.readYesNoPrompt("Is this information correct?");
-            } while (answer.equalsIgnoreCase("n"));
-            woops = personService.addNewPatient(patient);
-            if (woops.hasError()) {
-                view.displayErrorMessage(woops);
-                return new Patient();
-            }
-        } else {
-            patientLastName = view.enterLastName("What is the last name of the patient?");
-            List<Patient> patsLname = personService.findPatientByLastName(patientLastName);
-            int menuChoice = getMenuSelection(patsLname);
-            patient = patsLname.get(menuChoice);
-        }
-        return patient;
-    }
-
     //method that asks user to choose a profession from the menu
     private Professions getProfessionFromUser() {
         Professions jorb;
@@ -435,9 +414,12 @@ public class Controller<T> {
         if (answer.equalsIgnoreCase("n")) {
             patient = createNewPatientForAppointment();
         } else {
-            //bit of extra legwork here but ultimately retrieves desired patient from Dao
-            String patientLastName = getLastNameForSearch("Enter at least the first 3 letter of the last name of the patient you are searching for: ");
-            List<Patient> matches = personService.findPatientByLastName(patientLastName);
+            List<Patient> matches;
+            do {
+                //bit of extra legwork here but ultimately retrieves desired patient from Dao
+                String patientLastName = getLastNameForSearch("Enter at least the first 3 letter of the last name of the patient you are searching for: ");
+                matches = personService.findPatientByLastName(patientLastName);
+            } while (matches == null);
             menuChoice = getMenuSelection(matches);
             patient = matches.get(menuChoice);
         }
@@ -463,7 +445,7 @@ public class Controller<T> {
         do {
             keepRunning = true;
             dateOfChoice = getDateForSearch();
-            while(dateOfChoice.getDayOfWeek() == DayOfWeek.SUNDAY){
+            while (dateOfChoice.getDayOfWeek() == DayOfWeek.SUNDAY) {
                 woops.addErrors("We are closed on Sundays, please pick another day.");
                 view.displayErrorMessage(woops);
                 woops.deleteErrors(woops);
@@ -491,7 +473,7 @@ public class Controller<T> {
         if (!addAppointmentToFile(dateOfChoice, choiceOfOpenAppt, patient)) {
             view.printSuccess("Appointment successfully added.");
         } else {
-            woops.addErrors("There was an error adding the appointment. Please try again.");
+            woops.addErrors("Appointment not created.");
             view.displayErrorMessage(woops);
         }
 
@@ -550,6 +532,7 @@ public class Controller<T> {
         LocalTime startTime;
         LocalTime endTime;
         Appointment appt = new Appointment();
+        ErrorMessage uhoh = new ErrorMessage();
 
         if (openSlot.getProfessional().getSpecialty() != Professions.ORAL_SURGEON) {
             startTime = getStartTimeNotOralSurg(openSlot);
@@ -570,7 +553,13 @@ public class Controller<T> {
         appt.setTotalCost(totalCost);
         appt.setNotes(notes);
 
-        ErrorMessage uhoh = apptService.addAppointment(date, appt);
+        view.displayAppointment(appt);
+        String answer = view.readYesNoPrompt("Enter [y] to add this appointment, [n] to abandon and not add.");
+        if (answer.equalsIgnoreCase("y")) {
+            uhoh = apptService.addAppointment(date, appt);
+        } else {
+            uhoh.addErrors("Appointment creation abandoned.");
+        }
         return uhoh.hasError();
     }
 

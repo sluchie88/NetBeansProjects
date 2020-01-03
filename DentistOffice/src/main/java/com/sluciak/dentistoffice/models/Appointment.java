@@ -59,6 +59,18 @@ public class Appointment{
         this.notes = notes;
     }
     
+    public Appointment(Patient pat, Professional prof, LocalTime sTime, LocalTime eTime, BigDecimal cost, String notes){
+        this.patient = pat;
+        this.patID = pat.getPatientID();
+        this.professional = prof;
+        this.profName = prof.getLastName();
+        this.title = prof.getSpecialty();
+        this.startTime = sTime;
+        this.endTime = eTime;
+        this.totalCost = cost;
+        this.notes = notes;
+    }
+    
     public Patient getPatient() {
         return patient;
     }

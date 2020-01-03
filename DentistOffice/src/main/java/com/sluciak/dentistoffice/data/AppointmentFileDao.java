@@ -5,11 +5,11 @@
  */
 package com.sluciak.dentistoffice.data;
 
-import static com.sluciak.dentistoffice.data.PatientFileDao.HEADER;
 import com.sluciak.dentistoffice.models.Appointment;
 import com.sluciak.dentistoffice.models.Patient;
 import com.sluciak.dentistoffice.models.Professions;
 import com.sluciak.dentistoffice.models.Professional;
+import com.sluciak.dentistoffice.service.Validation;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -18,7 +18,6 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.math.BigDecimal;
-import java.nio.file.Files;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
@@ -42,7 +41,8 @@ public class AppointmentFileDao implements AppointmentDao {
     @Override
     public Appointment addAppointment(LocalDate date, Appointment appt) throws StorageException {
         List<Appointment> allAppts = findByDate(date);
-        if (!allAppts.contains(appt)) {
+        if (!Validation.isADoubleBooking(allAppts, appt) 
+                && Validation.canMakeAnotherAppointment(allAppts, appt)) {
             allAppts.add(appt);
             allAppts.sort((a, b) -> a.getProfessional().getLastName().compareTo(b.getProfessional().getLastName()));
             writeAppointments(allAppts, makeIntoFilePath(date));
@@ -61,6 +61,9 @@ public class AppointmentFileDao implements AppointmentDao {
     public List<Appointment> findByProfessionalAndDate(LocalDate date, String lastName) throws StorageException {
         List<Appointment> forDate = findByDate(date);
         Professional pro = PersonCompleter.getProfessionalByLastName(lastName);
+        if(pro == null){
+            throw new StorageException("No professionals with that last name work here");
+        }
         boolean found = false;
         for (Appointment apt : forDate) {
             if (apt.getProfessional().getProfessionalID() == pro.getProfessionalID()) {

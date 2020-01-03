@@ -109,7 +109,7 @@ public class AppointmentService implements AppointmentServiceInterface {
 
         List<Appointment> allApptsForDate = findByProfession(dateOfChoice, title);
         List<TimeSlot> allOpenTimes = new ArrayList<>();
-
+        
         /*
         Think like a linked list. Hold onto previous appointment for comparison's sake
         Compare end time of previous appointment to start time of next appointment
@@ -374,7 +374,7 @@ public class AppointmentService implements AppointmentServiceInterface {
     private List<TimeSlot> getTimeSlotsIsolatedAppt(Appointment appt, LocalTime start, LocalTime close, boolean weekend) {
         LocalTime lunchStart = null;
         LocalTime lunchEnd = null;
-        List<TimeSlot> openings = null;
+        List<TimeSlot> openings = new ArrayList<>();
         boolean morningAppt = appt.getStartTime().compareTo(LocalTime.of(12, 00)) < 0;
         
         if(!weekend){
